@@ -166,3 +166,21 @@ Module throttleModule = {
     // runtime fields
     0, 0, NULL
 };
+
+
+
+void Set_Throttle_inboundCheckbox(const char* value) {
+    IupSetAttribute(inboundCheckbox, "VALUE", value);
+}
+void Set_Throttle_outboundCheckbox(const char* value) {
+    IupSetAttribute(outboundCheckbox, "VALUE", value);
+}
+void Set_Throttle_dropThrottledCheckbox(const char* value) {
+    IupSetAttribute(dropThrottledCheckbox, "VALUE", value);
+}
+void Set_Throttle_frameInpchanceInputut(const char* value) {
+    IupSetAttribute(chanceInput, "VALUE", value);
+}
+void Set_Throttle_frameInput(const char* value) {
+    IupSetAttribute(frameInput, "VALUE", value);
+}

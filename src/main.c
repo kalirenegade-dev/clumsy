@@ -5,26 +5,957 @@
 #include <Windows.h>
 #include "iup.h"
 #include "common.h"
+#include "ini.h"
+#include <stdbool.h>
+#include "bandwidth.h"
+#include "drop.h"
+#include "duplicate.h"
+#include "lag.h"
+#include "ood.h"
+#include "reset.h"
+#include "tamper.h"
+#include "throttle.h"
+int running = 0;
+
+
+void preset1_config(void);
+void preset2_config(void);
+void preset3_config(void);
+void preset4_config(void);
+void preset5_config(void);
+
+
+
+typedef struct {
+   const char* Keybind;
+} General;
+
+typedef struct {
+    const char* PresetName;
+    bool Lag_Inbound;
+    bool Lag_Outbound;
+    const char* Lag_Delay;
+    bool Drop_Inbound;
+    bool Drop_Outbound;
+    const char* Drop_Chance;
+    const char* BandwidthLimiter_QueueSize;
+    const char* BandwidthLimiter_Size;
+    bool BandwidthLimiter_Inbound;
+    bool BandwidthLimiter_Outbound;
+    const char* BandwidthLimiter_Limit;
+    bool Throttle_DropThrottled;
+    const char* Throttle_Timeframe;
+    bool Throttle_Inbound;
+    bool Throttle_Outbound;
+    const char* Throttle_Chance;
+    const char* Duplicate_Count;
+    bool Duplicate_Inbound;
+    bool Duplicate_Outbound;
+    const char* Duplicate_Chance;
+    bool OutOfOrder_Inbound;
+    bool OutOfOrder_Outbound;
+    const char* OutOfOrder_Chance;
+    bool Tamper_RedoChecksum;
+    bool Tamper_Inbound;
+    bool Tamper_Outbound;
+    const char* Tamper_Chance;
+    bool SetTCPRST_Inbound;
+    bool SetTCPRST_Outbound;
+    const char* SetTCPRST_Chance;
+} Preset1;
+
+typedef struct {
+    const char* PresetName;
+    bool Lag_Inbound;
+    bool Lag_Outbound;
+    const char* Lag_Delay;
+    bool Drop_Inbound;
+    bool Drop_Outbound;
+    const char* Drop_Chance;
+    const char* BandwidthLimiter_QueueSize;
+    const char* BandwidthLimiter_Size;
+    bool BandwidthLimiter_Inbound;
+    bool BandwidthLimiter_Outbound;
+    const char* BandwidthLimiter_Limit;
+    bool Throttle_DropThrottled;
+    const char* Throttle_Timeframe;
+    bool Throttle_Inbound;
+    bool Throttle_Outbound;
+    const char* Throttle_Chance;
+    const char* Duplicate_Count;
+    bool Duplicate_Inbound;
+    bool Duplicate_Outbound;
+    const char* Duplicate_Chance;
+    bool OutOfOrder_Inbound;
+    bool OutOfOrder_Outbound;
+    const char* OutOfOrder_Chance;
+    bool Tamper_RedoChecksum;
+    bool Tamper_Inbound;
+    bool Tamper_Outbound;
+    const char* Tamper_Chance;
+    bool SetTCPRST_Inbound;
+    bool SetTCPRST_Outbound;
+    const char* SetTCPRST_Chance;
+} Preset2;
+
+typedef struct {
+    const char* PresetName;
+    bool Lag_Inbound;
+    bool Lag_Outbound;
+    const char* Lag_Delay;
+    bool Drop_Inbound;
+    bool Drop_Outbound;
+    const char* Drop_Chance;
+    const char* BandwidthLimiter_QueueSize;
+    const char* BandwidthLimiter_Size;
+    bool BandwidthLimiter_Inbound;
+    bool BandwidthLimiter_Outbound;
+    const char* BandwidthLimiter_Limit;
+    bool Throttle_DropThrottled;
+    const char* Throttle_Timeframe;
+    bool Throttle_Inbound;
+    bool Throttle_Outbound;
+    const char* Throttle_Chance;
+    const char* Duplicate_Count;
+    bool Duplicate_Inbound;
+    bool Duplicate_Outbound;
+    const char* Duplicate_Chance;
+    bool OutOfOrder_Inbound;
+    bool OutOfOrder_Outbound;
+    const char* OutOfOrder_Chance;
+    bool Tamper_RedoChecksum;
+    bool Tamper_Inbound;
+    bool Tamper_Outbound;
+    const char* Tamper_Chance;
+    bool SetTCPRST_Inbound;
+    bool SetTCPRST_Outbound;
+    const char* SetTCPRST_Chance;
+} Preset3;
+
+typedef struct {
+    const char* PresetName;
+    bool Lag_Inbound;
+    bool Lag_Outbound;
+    const char* Lag_Delay;
+    bool Drop_Inbound;
+    bool Drop_Outbound;
+    const char* Drop_Chance;
+    const char* BandwidthLimiter_QueueSize;
+    const char* BandwidthLimiter_Size;
+    bool BandwidthLimiter_Inbound;
+    bool BandwidthLimiter_Outbound;
+    const char* BandwidthLimiter_Limit;
+    bool Throttle_DropThrottled;
+    const char* Throttle_Timeframe;
+    bool Throttle_Inbound;
+    bool Throttle_Outbound;
+    const char* Throttle_Chance;
+    const char* Duplicate_Count;
+    bool Duplicate_Inbound;
+    bool Duplicate_Outbound;
+    const char* Duplicate_Chance;
+    bool OutOfOrder_Inbound;
+    bool OutOfOrder_Outbound;
+    const char* OutOfOrder_Chance;
+    bool Tamper_RedoChecksum;
+    bool Tamper_Inbound;
+    bool Tamper_Outbound;
+    const char* Tamper_Chance;
+    bool SetTCPRST_Inbound;
+    bool SetTCPRST_Outbound;
+    const char* SetTCPRST_Chance;
+} Preset4;
+
+typedef struct {
+    const char* PresetName;
+    bool Lag_Inbound;
+    bool Lag_Outbound;
+    const char* Lag_Delay;
+    bool Drop_Inbound;
+    bool Drop_Outbound;
+    const char* Drop_Chance;
+    const char* BandwidthLimiter_QueueSize;
+    const char* BandwidthLimiter_Size;
+    bool BandwidthLimiter_Inbound;
+    bool BandwidthLimiter_Outbound;
+    const char* BandwidthLimiter_Limit;
+    bool Throttle_DropThrottled;
+    const char* Throttle_Timeframe;
+    bool Throttle_Inbound;
+    bool Throttle_Outbound;
+    const char* Throttle_Chance;
+    const char* Duplicate_Count;
+    bool Duplicate_Inbound;
+    bool Duplicate_Outbound;
+    const char* Duplicate_Chance;
+    bool OutOfOrder_Inbound;
+    bool OutOfOrder_Outbound;
+    const char* OutOfOrder_Chance;
+    bool Tamper_RedoChecksum;
+    bool Tamper_Inbound;
+    bool Tamper_Outbound;
+    const char* Tamper_Chance;
+    bool SetTCPRST_Inbound;
+    bool SetTCPRST_Outbound;
+    const char* SetTCPRST_Chance;
+} Preset5;
+
+
+struct General {
+    const char* Keybind;
+};
+
+General general = {
+    "["
+};
+
+// Initialize Preset1 structure with default values
+Preset1 preset1 = {
+    .PresetName = "Preset1",
+    .Lag_Inbound = false,
+    .Lag_Outbound = false,
+    .Lag_Delay = "0",
+    .Drop_Inbound = false,
+    .Drop_Outbound = false,
+    .Drop_Chance = "0",
+    .BandwidthLimiter_QueueSize = "0",
+    .BandwidthLimiter_Size = "kb",
+    .BandwidthLimiter_Inbound = false,
+    .BandwidthLimiter_Outbound = false,
+    .BandwidthLimiter_Limit = "0",
+    .Throttle_DropThrottled = false,
+    .Throttle_Timeframe = "0",
+    .Throttle_Inbound = false,
+    .Throttle_Outbound = false,
+    .Throttle_Chance = "0",
+    .Duplicate_Count = "0",
+    .Duplicate_Inbound = false,
+    .Duplicate_Outbound = false,
+    .Duplicate_Chance = "0",
+    .OutOfOrder_Inbound = false,
+    .OutOfOrder_Outbound = false,
+    .OutOfOrder_Chance = "0",
+    .Tamper_RedoChecksum = false,
+    .Tamper_Inbound = false,
+    .Tamper_Outbound = false,
+    .Tamper_Chance = "0",
+    .SetTCPRST_Inbound = false,
+    .SetTCPRST_Outbound = false,
+    .SetTCPRST_Chance = "0"
+};
+
+// Initialize Preset1 structure with default values
+Preset2 preset2 = {
+    .PresetName = "Preset2",
+    .Lag_Inbound = false,
+    .Lag_Outbound = false,
+    .Lag_Delay = "0",
+    .Drop_Inbound = false,
+    .Drop_Outbound = false,
+    .Drop_Chance = "0",
+    .BandwidthLimiter_QueueSize = "0",
+    .BandwidthLimiter_Size = "kb",
+    .BandwidthLimiter_Inbound = false,
+    .BandwidthLimiter_Outbound = false,
+    .BandwidthLimiter_Limit = "0",
+    .Throttle_DropThrottled = false,
+    .Throttle_Timeframe = "0",
+    .Throttle_Inbound = false,
+    .Throttle_Outbound = false,
+    .Throttle_Chance = "0",
+    .Duplicate_Count = "0",
+    .Duplicate_Inbound = false,
+    .Duplicate_Outbound = false,
+    .Duplicate_Chance = "0",
+    .OutOfOrder_Inbound = false,
+    .OutOfOrder_Outbound = false,
+    .OutOfOrder_Chance = "0",
+    .Tamper_RedoChecksum = false,
+    .Tamper_Inbound = false,
+    .Tamper_Outbound = false,
+    .Tamper_Chance = "0",
+    .SetTCPRST_Inbound = false,
+    .SetTCPRST_Outbound = false,
+    .SetTCPRST_Chance = "0"
+};
+
+// Initialize Preset1 structure with default values
+Preset2 preset3 = {
+    .PresetName = "Preset3",
+    .Lag_Inbound = false,
+    .Lag_Outbound = false,
+    .Lag_Delay = "0",
+    .Drop_Inbound = false,
+    .Drop_Outbound = false,
+    .Drop_Chance = "0",
+    .BandwidthLimiter_QueueSize = "0",
+    .BandwidthLimiter_Size = "kb",
+    .BandwidthLimiter_Inbound = false,
+    .BandwidthLimiter_Outbound = false,
+    .BandwidthLimiter_Limit = "0",
+    .Throttle_DropThrottled = false,
+    .Throttle_Timeframe = "0",
+    .Throttle_Inbound = false,
+    .Throttle_Outbound = false,
+    .Throttle_Chance = "0",
+    .Duplicate_Count = "0",
+    .Duplicate_Inbound = false,
+    .Duplicate_Outbound = false,
+    .Duplicate_Chance = "0",
+    .OutOfOrder_Inbound = false,
+    .OutOfOrder_Outbound = false,
+    .OutOfOrder_Chance = "0",
+    .Tamper_RedoChecksum = false,
+    .Tamper_Inbound = false,
+    .Tamper_Outbound = false,
+    .Tamper_Chance = "0",
+    .SetTCPRST_Inbound = false,
+    .SetTCPRST_Outbound = false,
+    .SetTCPRST_Chance = "0"
+};
+
+// Initialize Preset1 structure with default values
+Preset2 preset4 = {
+    .PresetName = "Preset4",
+    .Lag_Inbound = false,
+    .Lag_Outbound = false,
+    .Lag_Delay = "0",
+    .Drop_Inbound = false,
+    .Drop_Outbound = false,
+    .Drop_Chance = "0",
+    .BandwidthLimiter_QueueSize = "0",
+    .BandwidthLimiter_Size = "kb",
+    .BandwidthLimiter_Inbound = false,
+    .BandwidthLimiter_Outbound = false,
+    .BandwidthLimiter_Limit = "0",
+    .Throttle_DropThrottled = false,
+    .Throttle_Timeframe = "0",
+    .Throttle_Inbound = false,
+    .Throttle_Outbound = false,
+    .Throttle_Chance = "0",
+    .Duplicate_Count = "0",
+    .Duplicate_Inbound = false,
+    .Duplicate_Outbound = false,
+    .Duplicate_Chance = "0",
+    .OutOfOrder_Inbound = false,
+    .OutOfOrder_Outbound = false,
+    .OutOfOrder_Chance = "0",
+    .Tamper_RedoChecksum = false,
+    .Tamper_Inbound = false,
+    .Tamper_Outbound = false,
+    .Tamper_Chance = "0",
+    .SetTCPRST_Inbound = false,
+    .SetTCPRST_Outbound = false,
+    .SetTCPRST_Chance = "0"
+};
+
+// Initialize Preset1 structure with default values
+Preset2 preset5 = {
+    .PresetName = "Preset5",
+    .Lag_Inbound = false,
+    .Lag_Outbound = false,
+    .Lag_Delay = "0",
+    .Drop_Inbound = false,
+    .Drop_Outbound = false,
+    .Drop_Chance = "0",
+    .BandwidthLimiter_QueueSize = "0",
+    .BandwidthLimiter_Size = "kb",
+    .BandwidthLimiter_Inbound = false,
+    .BandwidthLimiter_Outbound = false,
+    .BandwidthLimiter_Limit = "0",
+    .Throttle_DropThrottled = false,
+    .Throttle_Timeframe = "0",
+    .Throttle_Inbound = false,
+    .Throttle_Outbound = false,
+    .Throttle_Chance = "0",
+    .Duplicate_Count = "0",
+    .Duplicate_Inbound = false,
+    .Duplicate_Outbound = false,
+    .Duplicate_Chance = "0",
+    .OutOfOrder_Inbound = false,
+    .OutOfOrder_Outbound = false,
+    .OutOfOrder_Chance = "0",
+    .Tamper_RedoChecksum = false,
+    .Tamper_Inbound = false,
+    .Tamper_Outbound = false,
+    .Tamper_Chance = "0",
+    .SetTCPRST_Inbound = false,
+    .SetTCPRST_Outbound = false,
+    .SetTCPRST_Chance = "0"
+};
+
+
+
+static int handler3(void* user, const char* section, const char* name, const char* value) {
+    General* generalconfig = (General*)user;
+#define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
+
+    if (MATCH("General", "Keybind")) {
+        // Use _strdup if your environment requires it
+        generalconfig->Keybind = _strdup(value);
+
+        // Optionally, handle memory allocation errors
+        if (generalconfig->Keybind == NULL) {
+            return -1; // Indicate an error
+        }
+    }
+
+    return 0; // Indicate success
+}
+
+
+static int handler1(void* user, const char* section, const char* name, const char* value)
+{
+    Preset1* pconfig1 = (Preset1*)user;
+
+#define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
+
+    if (MATCH("Preset1", "PresetName")) {
+        pconfig1->PresetName = _strdup(value);
+    }
+    else if (MATCH("Preset1", "Lag_Inbound")) {
+        pconfig1->Lag_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "Lag_Outbound")) {
+        pconfig1->Lag_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "Lag_Delay")) {
+        pconfig1->Lag_Delay = _strdup(value);
+    }
+    else if (MATCH("Preset1", "Drop_Inbound")) {
+        pconfig1->Drop_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "Drop_Outbound")) {
+        pconfig1->Drop_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "Drop_Chance")) {
+        pconfig1->Drop_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset1", "BandwidthLimiter_QueueSize")) {
+        pconfig1->BandwidthLimiter_QueueSize = _strdup(value);
+    }
+    else if (MATCH("Preset1", "BandwidthLimiter_Size")) {
+        pconfig1->BandwidthLimiter_Size = _strdup(value);
+    }
+    else if (MATCH("Preset1", "BandwidthLimiter_Inbound")) {
+        pconfig1->BandwidthLimiter_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "BandwidthLimiter_Outbound")) {
+        pconfig1->BandwidthLimiter_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "BandwidthLimiter_Limit")) {
+        pconfig1->BandwidthLimiter_Limit = _strdup(value);
+    }
+    else if (MATCH("Preset1", "Throttle_DropThrottled")) {
+        pconfig1->Throttle_DropThrottled = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "Throttle_Timeframe")) {
+        pconfig1->Throttle_Timeframe = _strdup(value);
+    }
+    else if (MATCH("Preset1", "Throttle_Inbound")) {
+        pconfig1->Throttle_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "Throttle_Outbound")) {
+        pconfig1->Throttle_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "Throttle_Chance")) {
+        pconfig1->Throttle_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset1", "Duplicate_Count")) {
+        pconfig1->Duplicate_Count = _strdup(value);
+    }
+    else if (MATCH("Preset1", "Duplicate_Inbound")) {
+        pconfig1->Duplicate_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "Duplicate_Outbound")) {
+        pconfig1->Duplicate_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "Duplicate_Chance")) {
+        pconfig1->Duplicate_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset1", "OutOfOrder_Inbound")) {
+        pconfig1->OutOfOrder_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "OutOfOrder_Outbound")) {
+        pconfig1->OutOfOrder_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "OutOfOrder_Chance")) {
+        pconfig1->OutOfOrder_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset1", "Tamper_RedoChecksum")) {
+        pconfig1->Tamper_RedoChecksum = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "Tamper_Inbound")) {
+        pconfig1->Tamper_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "Tamper_Outbound")) {
+        pconfig1->Tamper_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "Tamper_Chance")) {
+        pconfig1->Tamper_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset1", "SetTCPRST_Inbound")) {
+        pconfig1->SetTCPRST_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "SetTCPRST_Outbound")) {
+        pconfig1->SetTCPRST_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "SetTCPRST_Chance")) {
+        pconfig1->SetTCPRST_Chance = _strdup(value);
+    }else {
+        return 0;  // unknown section/name, error
+    }
+
+    return 1;  // Success
+}
+static int handler2(void* user, const char* section, const char* name, const char* value)
+{
+
+    Preset2* pconfig2 = (Preset2*)user;
+
+
+#define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
+
+   if (MATCH("Preset2", "PresetName")) {
+        pconfig2->PresetName = _strdup(value);
+    }
+    else if (MATCH("Preset2", "Lag_Inbound")) {
+        pconfig2->Lag_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "Lag_Outbound")) {
+        pconfig2->Lag_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "Lag_Delay")) {
+        pconfig2->Lag_Delay = _strdup(value);
+    }
+    else if (MATCH("Preset2", "Drop_Inbound")) {
+        pconfig2->Drop_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "Drop_Outbound")) {
+        pconfig2->Drop_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "Drop_Chance")) {
+        pconfig2->Drop_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset2", "BandwidthLimiter_QueueSize")) {
+        pconfig2->BandwidthLimiter_QueueSize = _strdup(value);
+    }
+    else if (MATCH("Preset2", "BandwidthLimiter_Size")) {
+        pconfig2->BandwidthLimiter_Size = _strdup(value);
+    }
+    else if (MATCH("Preset2", "BandwidthLimiter_Inbound")) {
+        pconfig2->BandwidthLimiter_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "BandwidthLimiter_Outbound")) {
+        pconfig2->BandwidthLimiter_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "BandwidthLimiter_Limit")) {
+        pconfig2->BandwidthLimiter_Limit = _strdup(value);
+    }
+    else if (MATCH("Preset2", "Throttle_DropThrottled")) {
+        pconfig2->Throttle_DropThrottled = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "Throttle_Timeframe")) {
+        pconfig2->Throttle_Timeframe = _strdup(value);
+    }
+    else if (MATCH("Preset2", "Throttle_Inbound")) {
+        pconfig2->Throttle_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "Throttle_Outbound")) {
+        pconfig2->Throttle_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "Throttle_Chance")) {
+        pconfig2->Throttle_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset2", "Duplicate_Count")) {
+        pconfig2->Duplicate_Count = _strdup(value);
+    }
+    else if (MATCH("Preset2", "Duplicate_Inbound")) {
+        pconfig2->Duplicate_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "Duplicate_Outbound")) {
+        pconfig2->Duplicate_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "Duplicate_Chance")) {
+        pconfig2->Duplicate_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset2", "OutOfOrder_Inbound")) {
+        pconfig2->OutOfOrder_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "OutOfOrder_Outbound")) {
+        pconfig2->OutOfOrder_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "OutOfOrder_Chance")) {
+        pconfig2->OutOfOrder_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset2", "Tamper_RedoChecksum")) {
+        pconfig2->Tamper_RedoChecksum = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "Tamper_Inbound")) {
+        pconfig2->Tamper_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "Tamper_Outbound")) {
+        pconfig2->Tamper_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "Tamper_Chance")) {
+        pconfig2->Tamper_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset2", "SetTCPRST_Inbound")) {
+        pconfig2->SetTCPRST_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "SetTCPRST_Outbound")) {
+        pconfig2->SetTCPRST_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset2", "SetTCPRST_Chance")) {
+        pconfig2->SetTCPRST_Chance = _strdup(value);
+    }
+    else {
+        return 0;  // unknown section/name, error
+    }
+
+    return 1;  // Success
+}
+static int handler4(void* user, const char* section, const char* name, const char* value)
+{
+    Preset3* pconfig3 = (Preset3*)user;
+
+#define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
+
+    if (MATCH("Preset3", "PresetName")) {
+        pconfig3->PresetName = _strdup(value);
+    }
+    else if (MATCH("Preset3", "Lag_Inbound")) {
+        pconfig3->Lag_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "Lag_Outbound")) {
+        pconfig3->Lag_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "Lag_Delay")) {
+        pconfig3->Lag_Delay = _strdup(value);
+    }
+    else if (MATCH("Preset3", "Drop_Inbound")) {
+        pconfig3->Drop_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "Drop_Outbound")) {
+        pconfig3->Drop_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "Drop_Chance")) {
+        pconfig3->Drop_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset3", "BandwidthLimiter_QueueSize")) {
+        pconfig3->BandwidthLimiter_QueueSize = _strdup(value);
+    }
+    else if (MATCH("Preset3", "BandwidthLimiter_Size")) {
+        pconfig3->BandwidthLimiter_Size = _strdup(value);
+    }
+    else if (MATCH("Preset3", "BandwidthLimiter_Inbound")) {
+        pconfig3->BandwidthLimiter_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "BandwidthLimiter_Outbound")) {
+        pconfig3->BandwidthLimiter_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "BandwidthLimiter_Limit")) {
+        pconfig3->BandwidthLimiter_Limit = _strdup(value);
+    }
+    else if (MATCH("Preset3", "Throttle_DropThrottled")) {
+        pconfig3->Throttle_DropThrottled = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "Throttle_Timeframe")) {
+        pconfig3->Throttle_Timeframe = _strdup(value);
+    }
+    else if (MATCH("Preset3", "Throttle_Inbound")) {
+        pconfig3->Throttle_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "Throttle_Outbound")) {
+        pconfig3->Throttle_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "Throttle_Chance")) {
+        pconfig3->Throttle_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset3", "Duplicate_Count")) {
+        pconfig3->Duplicate_Count = _strdup(value);
+    }
+    else if (MATCH("Preset3", "Duplicate_Inbound")) {
+        pconfig3->Duplicate_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "Duplicate_Outbound")) {
+        pconfig3->Duplicate_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "Duplicate_Chance")) {
+        pconfig3->Duplicate_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset3", "OutOfOrder_Inbound")) {
+        pconfig3->OutOfOrder_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "OutOfOrder_Outbound")) {
+        pconfig3->OutOfOrder_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "OutOfOrder_Chance")) {
+        pconfig3->OutOfOrder_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset3", "Tamper_RedoChecksum")) {
+        pconfig3->Tamper_RedoChecksum = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "Tamper_Inbound")) {
+        pconfig3->Tamper_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "Tamper_Outbound")) {
+        pconfig3->Tamper_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "Tamper_Chance")) {
+        pconfig3->Tamper_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset3", "SetTCPRST_Inbound")) {
+        pconfig3->SetTCPRST_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "SetTCPRST_Outbound")) {
+        pconfig3->SetTCPRST_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "SetTCPRST_Chance")) {
+        pconfig3->SetTCPRST_Chance = _strdup(value);
+    }
+    else {
+        return 0;  // unknown section/name, error
+    }
+
+    return 1;  // Success
+}
+static int handler5(void* user, const char* section, const char* name, const char* value)
+{
+    Preset4* pconfig4 = (Preset4*)user;
+
+#define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
+
+    if (MATCH("Preset4", "PresetName")) {
+        pconfig4->PresetName = _strdup(value);
+    }
+    else if (MATCH("Preset4", "Lag_Inbound")) {
+        pconfig4->Lag_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "Lag_Outbound")) {
+        pconfig4->Lag_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "Lag_Delay")) {
+        pconfig4->Lag_Delay = _strdup(value);
+    }
+    else if (MATCH("Preset4", "Drop_Inbound")) {
+        pconfig4->Drop_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "Drop_Outbound")) {
+        pconfig4->Drop_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "Drop_Chance")) {
+        pconfig4->Drop_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset4", "BandwidthLimiter_QueueSize")) {
+        pconfig4->BandwidthLimiter_QueueSize = _strdup(value);
+    }
+    else if (MATCH("Preset4", "BandwidthLimiter_Size")) {
+        pconfig4->BandwidthLimiter_Size = _strdup(value);
+    }
+    else if (MATCH("Preset4", "BandwidthLimiter_Inbound")) {
+        pconfig4->BandwidthLimiter_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "BandwidthLimiter_Outbound")) {
+        pconfig4->BandwidthLimiter_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "BandwidthLimiter_Limit")) {
+        pconfig4->BandwidthLimiter_Limit = _strdup(value);
+    }
+    else if (MATCH("Preset4", "Throttle_DropThrottled")) {
+        pconfig4->Throttle_DropThrottled = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "Throttle_Timeframe")) {
+        pconfig4->Throttle_Timeframe = _strdup(value);
+    }
+    else if (MATCH("Preset4", "Throttle_Inbound")) {
+        pconfig4->Throttle_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "Throttle_Outbound")) {
+        pconfig4->Throttle_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "Throttle_Chance")) {
+        pconfig4->Throttle_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset4", "Duplicate_Count")) {
+        pconfig4->Duplicate_Count = _strdup(value);
+    }
+    else if (MATCH("Preset4", "Duplicate_Inbound")) {
+        pconfig4->Duplicate_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "Duplicate_Outbound")) {
+        pconfig4->Duplicate_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "Duplicate_Chance")) {
+        pconfig4->Duplicate_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset4", "OutOfOrder_Inbound")) {
+        pconfig4->OutOfOrder_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "OutOfOrder_Outbound")) {
+        pconfig4->OutOfOrder_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "OutOfOrder_Chance")) {
+        pconfig4->OutOfOrder_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset4", "Tamper_RedoChecksum")) {
+        pconfig4->Tamper_RedoChecksum = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "Tamper_Inbound")) {
+        pconfig4->Tamper_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "Tamper_Outbound")) {
+        pconfig4->Tamper_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "Tamper_Chance")) {
+        pconfig4->Tamper_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset4", "SetTCPRST_Inbound")) {
+        pconfig4->SetTCPRST_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "SetTCPRST_Outbound")) {
+        pconfig4->SetTCPRST_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "SetTCPRST_Chance")) {
+        pconfig4->SetTCPRST_Chance = _strdup(value);
+    }
+    else {
+        return 0;  // unknown section/name, error
+    }
+
+    return 1;  // Success
+}
+static int handler6(void* user, const char* section, const char* name, const char* value)
+{
+    Preset5* pconfig5 = (Preset5*)user;
+
+#define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
+
+    if (MATCH("Preset5", "PresetName")) {
+        pconfig5->PresetName = _strdup(value);
+    }
+    else if (MATCH("Preset5", "Lag_Inbound")) {
+        pconfig5->Lag_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "Lag_Outbound")) {
+        pconfig5->Lag_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "Lag_Delay")) {
+        pconfig5->Lag_Delay = _strdup(value);
+    }
+    else if (MATCH("Preset5", "Drop_Inbound")) {
+        pconfig5->Drop_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "Drop_Outbound")) {
+        pconfig5->Drop_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "Drop_Chance")) {
+        pconfig5->Drop_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset5", "BandwidthLimiter_QueueSize")) {
+        pconfig5->BandwidthLimiter_QueueSize = _strdup(value);
+    }
+    else if (MATCH("Preset5", "BandwidthLimiter_Size")) {
+        pconfig5->BandwidthLimiter_Size = _strdup(value);
+    }
+    else if (MATCH("Preset5", "BandwidthLimiter_Inbound")) {
+        pconfig5->BandwidthLimiter_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "BandwidthLimiter_Outbound")) {
+        pconfig5->BandwidthLimiter_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "BandwidthLimiter_Limit")) {
+        pconfig5->BandwidthLimiter_Limit = _strdup(value);
+    }
+    else if (MATCH("Preset5", "Throttle_DropThrottled")) {
+        pconfig5->Throttle_DropThrottled = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "Throttle_Timeframe")) {
+        pconfig5->Throttle_Timeframe = _strdup(value);
+    }
+    else if (MATCH("Preset5", "Throttle_Inbound")) {
+        pconfig5->Throttle_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "Throttle_Outbound")) {
+        pconfig5->Throttle_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "Throttle_Chance")) {
+        pconfig5->Throttle_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset5", "Duplicate_Count")) {
+        pconfig5->Duplicate_Count = _strdup(value);
+    }
+    else if (MATCH("Preset5", "Duplicate_Inbound")) {
+        pconfig5->Duplicate_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "Duplicate_Outbound")) {
+        pconfig5->Duplicate_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "Duplicate_Chance")) {
+        pconfig5->Duplicate_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset5", "OutOfOrder_Inbound")) {
+        pconfig5->OutOfOrder_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "OutOfOrder_Outbound")) {
+        pconfig5->OutOfOrder_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "OutOfOrder_Chance")) {
+        pconfig5->OutOfOrder_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset5", "Tamper_RedoChecksum")) {
+        pconfig5->Tamper_RedoChecksum = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "Tamper_Inbound")) {
+        pconfig5->Tamper_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "Tamper_Outbound")) {
+        pconfig5->Tamper_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "Tamper_Chance")) {
+        pconfig5->Tamper_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset5", "SetTCPRST_Inbound")) {
+        pconfig5->SetTCPRST_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "SetTCPRST_Outbound")) {
+        pconfig5->SetTCPRST_Outbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "SetTCPRST_Chance")) {
+        pconfig5->SetTCPRST_Chance = _strdup(value);
+    }
+    else {
+        return 0;  // unknown section/name, error
+    }
+
+    return 1;  // Success
+}
 
 // ! the order decides which module get processed first
 Module* modules[MODULE_CNT] = {
     &lagModule,
     &dropModule,
+    &bandwidthModule,
     &throttleModule,
     &dupModule,
     &oodModule,
     &tamperModule,
     &resetModule,
-	&bandwidthModule,
 };
 
 volatile short sendState = SEND_STATUS_NONE;
 
 // global iup handlers
-static Ihandle *dialog, *topFrame, *bottomFrame; 
+static Ihandle *dialog, *topFrame, * middleFrame, * lowerMiddleFrame, * bottomFrame;
 static Ihandle *statusLabel;
-static Ihandle *filterText, *filterButton;
-Ihandle *filterSelectList;
+static Ihandle* filterText, * filterButton;
+static Ihandle* label1, * label2;
+
+
+Ihandle* filterSelectList;
+Ihandle* filterSelectList2;
+Ihandle* filterSelectList3;
+
 // timer to update icons
 static Ihandle *stateIcon;
 static Ihandle *timer;
@@ -36,7 +967,11 @@ static int uiStopCb(Ihandle *ih);
 static int uiStartCb(Ihandle *ih);
 static int uiTimerCb(Ihandle *ih);
 static int uiTimeoutCb(Ihandle *ih);
-static int uiListSelectCb(Ihandle *ih, char *text, int item, int state);
+static int uiListSelectCb(Ihandle* ih, char* text, int item, int state);
+static int uiList2SelectCb(Ihandle* ih, char* text, int item, int state);
+static int uiList3SelectCb(Ihandle* ih, char* text, int item, int state);
+
+
 static int uiFilterTextCb(Ihandle *ih);
 static void uiSetupModule(Module *module, Ihandle *parent);
 
@@ -121,8 +1056,8 @@ EAT_SPACE:  while (isspace(*current)) { ++current; }
 
 void init(int argc, char* argv[]) {
     UINT ix;
-    Ihandle *topVbox, *bottomVbox, *dialogVBox, *controlHbox;
-    Ihandle *noneIcon, *doingIcon, *errorIcon;
+    Ihandle* topVbox, * bottomVbox, * dialogVBox, * controlHbox;
+    Ihandle* noneIcon, * doingIcon, * errorIcon;
     char* arg_value = NULL;
 
     // fill in config
@@ -143,6 +1078,8 @@ void init(int argc, char* argv[]) {
             controlHbox = IupHbox(
                 stateIcon = IupLabel(NULL),
                 filterButton = IupButton("Start", NULL),
+                IupLabel("Network:  "),
+                filterSelectList2 = IupList(NULL),
                 IupFill(),
                 IupLabel("Presets:  "),
                 filterSelectList = IupList(NULL),
@@ -151,6 +1088,44 @@ void init(int argc, char* argv[]) {
             NULL
         )
     );
+
+    
+      controlHbox = IupHbox(
+        IupLabel("Function Presets:  "),
+        filterSelectList3 = IupList(NULL),
+        IupFill(),
+        NULL
+    );
+
+    lowerMiddleFrame = IupFrame(
+        controlHbox
+  
+    );
+
+    // Define the keybind as a constant character string
+    const char* keybind =general.Keybind;
+
+    // Base text with placeholder for the keybind variable
+    const char* baseText = "Use the key %s to toggle on/off\nThis is a modified version of clumsy to use hotkeys to toggle on/off coded by kalirenegade";
+
+    // Calculate the length needed for the formatted string
+    int len = snprintf(NULL, 0, baseText, keybind) + 1;
+
+  // Allocate memory for the label text
+    char* labelText = (char*)malloc(len);
+    if (labelText == NULL) {
+        perror("Failed to allocate memory");
+        // Handle the error appropriately (e.g., log it, clean up resources)
+        return;  // Simply return without a value
+    }
+
+    // Construct the label text with the keybind variable
+    snprintf(labelText, len, baseText, keybind);
+    middleFrame = IupFrame(
+        label1 = IupLabel(labelText)
+      
+    );
+
 
     // parse arguments and set globals *before* setting up UI.
     // arguments can be read and set after callbacks are setup
@@ -163,7 +1138,7 @@ void init(int argc, char* argv[]) {
         }
         parameterized = 1;
     }
-
+    IupSetAttribute(label1, "ALIGNMENT", "ACENTER");    
     IupSetAttribute(topFrame, "TITLE", "Filtering");
     IupSetAttribute(topFrame, "EXPAND", "HORIZONTAL");
     IupSetAttribute(filterText, "EXPAND", "HORIZONTAL");
@@ -181,6 +1156,13 @@ void init(int argc, char* argv[]) {
     // fill in options and setup callback
     IupSetAttribute(filterSelectList, "VISIBLECOLUMNS", "24");
     IupSetAttribute(filterSelectList, "DROPDOWN", "YES");
+
+    IupSetAttribute(filterSelectList2, "VISIBLECOLUMNS", "15");
+    IupSetAttribute(filterSelectList2, "DROPDOWN", "YES");
+    IupSetAttributes(filterSelectList2, "1=LAYER_NETWORK, 2=LAYER_NETWORK_FORWARD");
+    IupSetAttribute(filterSelectList2, "VALUE", "1");
+    IupSetCallback(filterSelectList2, "ACTION", (Icallback)uiList2SelectCb);
+
     for (ix = 0; ix < filtersSize; ++ix) {
         char ixBuf[4];
         sprintf(ixBuf, "%d", ix+1); // ! staring from 1, following lua indexing
@@ -215,6 +1197,22 @@ void init(int argc, char* argv[]) {
     IupSetHandle("doing_icon", doingIcon);
     IupSetHandle("error_icon", errorIcon);
 
+
+
+    IupSetAttribute(label1, "EXPAND", "HORIZONTAL");
+    IupSetAttribute(middleFrame, "TITLE", "Info");
+    IupSetAttribute(middleFrame, "EXPAND", "HORIZONTAL");
+    
+
+    IupSetAttribute(label2, "EXPAND", "HORIZONTAL");
+    IupSetAttribute(lowerMiddleFrame, "TITLE", "Extra Presets");
+    IupSetAttribute(lowerMiddleFrame, "EXPAND", "HORIZONTAL");
+    IupSetAttribute(filterSelectList3, "VISIBLECOLUMNS", "15");
+    IupSetAttribute(filterSelectList3, "DROPDOWN", "YES");
+
+    IupSetCallback(filterSelectList3, "ACTION", (Icallback)uiList3SelectCb);
+
+    
     // setup module uis
     for (ix = 0; ix < MODULE_CNT; ++ix) {
         uiSetupModule(*(modules+ix), bottomVbox);
@@ -224,13 +1222,15 @@ void init(int argc, char* argv[]) {
     dialog = IupDialog(
         dialogVBox = IupVbox(
             topFrame,
+            middleFrame,
+            lowerMiddleFrame,
             bottomFrame,
             statusLabel,
             NULL
         )
     );
 
-    IupSetAttribute(dialog, "TITLE", "clumsy " CLUMSY_VERSION);
+    IupSetAttribute(dialog, "TITLE", "clumsy Keybind Edition by Kalirenegade " CLUMSY_VERSION);
     IupSetAttribute(dialog, "SIZE", "480x"); // add padding manually to width
     IupSetAttribute(dialog, "RESIZE", "NO");
     IupSetCallback(dialog, "SHOW_CB", (Icallback)uiOnDialogShow);
@@ -358,6 +1358,7 @@ static int uiOnDialogShow(Ihandle *ih, int state) {
 }
 
 static int uiStartCb(Ihandle *ih) {
+    running = 1;
     char buf[MSG_BUFSIZE];
     UNREFERENCED_PARAMETER(ih);
     if (divertStart(IupGetAttribute(filterText, "VALUE"), buf) == 0) {
@@ -376,6 +1377,7 @@ static int uiStartCb(Ihandle *ih) {
 }
 
 static int uiStopCb(Ihandle *ih) {
+    running = 0;
     int ix;
     UNREFERENCED_PARAMETER(ih);
     
@@ -417,32 +1419,22 @@ static int uiToggleControls(Ihandle *ih, int state) {
     return IUP_DEFAULT;
 }
 
-static int uiTimerCb(Ihandle *ih) {
+static int uiTimerCb(Ihandle* ih) {
     int ix;
     UNREFERENCED_PARAMETER(ih);
+
     for (ix = 0; ix < MODULE_CNT; ++ix) {
-        if (modules[ix]->processTriggered) {
+        // Use Interlocked functions for thread-safe access
+        short processTriggered = InterlockedExchange16(&(modules[ix]->processTriggered), 0);
+
+        if (processTriggered) {
             IupSetAttribute(modules[ix]->iconHandle, "IMAGE", "doing_icon");
+            // Set the value back to 0 atomically
             InterlockedAnd16(&(modules[ix]->processTriggered), 0);
-        } else {
+        }
+        else {
             IupSetAttribute(modules[ix]->iconHandle, "IMAGE", "none_icon");
         }
-    }
-
-    // update global send status icon
-    switch (sendState)
-    {
-    case SEND_STATUS_NONE:
-        IupSetAttribute(stateIcon, "IMAGE", "none_icon");
-        break;
-    case SEND_STATUS_SEND:
-        IupSetAttribute(stateIcon, "IMAGE", "doing_icon");
-        InterlockedAnd16(&sendState, SEND_STATUS_NONE);
-        break;
-    case SEND_STATUS_FAIL:
-        IupSetAttribute(stateIcon, "IMAGE", "error_icon");
-        InterlockedAnd16(&sendState, SEND_STATUS_NONE);
-        break;
     }
 
     return IUP_DEFAULT;
@@ -453,13 +1445,711 @@ static int uiTimeoutCb(Ihandle *ih) {
     return IUP_CLOSE;
  }
 
-static int uiListSelectCb(Ihandle *ih, char *text, int item, int state) {
+
+static int uiListSelectCb(Ihandle* ih, char* text, int item, int state) {
     UNREFERENCED_PARAMETER(text);
     UNREFERENCED_PARAMETER(ih);
     if (state == 1) {
-        IupSetAttribute(filterText, "VALUE", filters[item-1].filterValue);
+        IupSetAttribute(filterText, "VALUE", filters[item - 1].filterValue);
     }
     return IUP_DEFAULT;
+}
+
+static int uiList2SelectCb(Ihandle* ih, char* text, int item, int state) {
+    UNREFERENCED_PARAMETER(text);
+    UNREFERENCED_PARAMETER(ih);
+    // Use state if needed, or remove the comment
+    if (state == 1) {
+        NetworkType = item;
+    }
+    return IUP_DEFAULT;
+}
+
+static int uiList3SelectCb(Ihandle* ih, char* text, int item, int state) {
+    UNREFERENCED_PARAMETER(text);
+    UNREFERENCED_PARAMETER(ih);
+    UNREFERENCED_PARAMETER(item);
+    UNREFERENCED_PARAMETER(state);  
+
+    if (state == 1) {
+        if (strcmp(text, preset1.PresetName) == 0) {
+            //preset1
+            preset1_config();
+        }
+        else if (strcmp(text, preset2.PresetName) == 0) {
+            //preset2
+            preset2_config();
+        }
+        else if (strcmp(text, preset3.PresetName) == 0) {
+            //preset3
+            preset3_config();
+        }
+        else if (strcmp(text, preset4.PresetName) == 0) {
+            //preset4
+            preset4_config();
+        }
+        else if (strcmp(text, preset5.PresetName) == 0) {
+            //preset5
+            preset5_config();
+          
+
+        }
+      
+
+    }
+    return IUP_DEFAULT;
+}
+
+void preset1_config(void) {
+    //lag
+    if (preset1.Lag_Inbound == true) {
+        Set_Lag_inboundCheckbox("ON");
+    }
+    else {
+        Set_Lag_inboundCheckbox("OFF");
+    }
+    if (preset1.Lag_Outbound == true) {
+        Set_Lag_outboundCheckbox("ON");
+    }
+    else {
+        Set_Lag_outboundCheckbox("OFF");
+    }
+    Set_Lag_timeInput(preset1.Lag_Delay);
+    //drop
+    if (preset1.Drop_Inbound == true) {
+        Set_Drop_inboundCheckbox("ON");
+    }
+    else {
+        Set_Drop_inboundCheckbox("OFF");
+    }
+    if (preset1.Drop_Outbound == true) {
+        Set_Drop_outboundCheckbox("ON");
+    }
+    else {
+        Set_Drop_outboundCheckbox("OFF");
+    }
+    Set_Drop_chanceInput(preset1.Drop_Chance);
+    //bandwidth
+    if (preset1.BandwidthLimiter_Inbound == true) {
+        Set_Bandwidth_inboundCheckbox("ON");
+    }
+    else {
+        Set_Bandwidth_inboundCheckbox("OFF");
+    }
+    if (preset1.BandwidthLimiter_Outbound == true) {
+        Set_Bandwidth_outboundCheckbox("ON");
+    }
+    else {
+        Set_Bandwidth_outboundCheckbox("OFF");
+    }
+    Set_Bandwidth_bandwidthInput(preset1.BandwidthLimiter_Limit);
+    Set_Bandwidth_queueSizeInput(preset1.BandwidthLimiter_QueueSize);
+    Set_Bandwidth_speed(preset1.BandwidthLimiter_Size);
+    //Throttle
+    if (preset1.Throttle_Inbound == true) {
+        Set_Throttle_inboundCheckbox("ON");
+    }
+    else {
+        Set_Throttle_inboundCheckbox("OFF");
+    }
+    if (preset1.Throttle_Outbound == true) {
+        Set_Throttle_outboundCheckbox("ON");
+    }
+    else {
+        Set_Throttle_outboundCheckbox("OFF");
+    }
+    Set_Throttle_frameInput(preset1.Throttle_Timeframe);
+    Set_Throttle_frameInpchanceInputut(preset1.Throttle_Chance);
+    if (preset1.Throttle_DropThrottled == true) {
+        Set_Throttle_dropThrottledCheckbox("ON");
+    }
+    else {
+        Set_Throttle_dropThrottledCheckbox("OFF");
+    }
+    //Duplicate
+    if (preset1.Duplicate_Inbound == true) {
+        Set_Duplicate_inboundCheckbox("ON");
+    }
+    else {
+        Set_Duplicate_inboundCheckbox("OFF");
+    }
+    if (preset1.Duplicate_Outbound == true) {
+        Set_Duplicate_outboundCheckbox("ON");
+    }
+    else {
+        Set_Duplicate_outboundCheckbox("OFF");
+    }
+    Set_Duplicate_chanceInput(preset1.Duplicate_Chance);
+    Set_Duplicate_countInput(preset1.Duplicate_Count);
+    //OutOfOrdfer
+    if (preset1.OutOfOrder_Inbound == true) {
+        Set_OutOfOrder_inboundCheckbox("ON");
+    }
+    else {
+        Set_OutOfOrder_inboundCheckbox("OFF");
+    }
+    if (preset1.OutOfOrder_Outbound == true) {
+        Set_OutOfOrder_outboundCheckbox("ON");
+    }
+    else {
+        Set_OutOfOrder_outboundCheckbox("OFF");
+    }
+    Set_OutOfOrder_chanceInput(preset1.OutOfOrder_Chance);
+    //Tamper
+    if (preset1.Tamper_Inbound == true) {
+        Set_Tamper_inboundCheckbox("ON");
+    }
+    else {
+        Set_Tamper_inboundCheckbox("OFF");
+    }
+    if (preset1.Tamper_Outbound == true) {
+        Set_Tamper_outboundCheckbox("ON");
+    }
+    else {
+        Set_Tamper_outboundCheckbox("OFF");
+    }
+    Set_Tamper_chanceInput(preset1.Tamper_Chance);
+    if (preset1.Tamper_RedoChecksum == true) {
+        Set_Tamper_checksumCheckbox("ON");
+    }
+    else {
+        Set_Tamper_checksumCheckbox("OFF");
+    }
+    //Reset
+    if (preset1.SetTCPRST_Inbound == true) {
+        Set_Reset_inboundCheckbox("ON");
+    }
+    else {
+        Set_Reset_inboundCheckbox("OFF");
+    }
+    if (preset1.SetTCPRST_Outbound == true) {
+        Set_Reset_outboundCheckbox("ON");
+    }
+    else {
+        Set_Reset_outboundCheckbox("OFF");
+    }
+    Set_Reset_chanceInput(preset1.SetTCPRST_Chance);
+}
+
+void preset2_config(void) {
+    //lag
+    if (preset2.Lag_Inbound == true) {
+        Set_Lag_inboundCheckbox("ON");
+    }
+    else {
+        Set_Lag_inboundCheckbox("OFF");
+    }
+    if (preset2.Lag_Outbound == true) {
+        Set_Lag_outboundCheckbox("ON");
+    }
+    else {
+        Set_Lag_outboundCheckbox("OFF");
+    }
+    Set_Lag_timeInput(preset2.Lag_Delay);
+    //drop
+    if (preset2.Drop_Inbound == true) {
+        Set_Drop_inboundCheckbox("ON");
+    }
+    else {
+        Set_Drop_inboundCheckbox("OFF");
+    }
+    if (preset2.Drop_Outbound == true) {
+        Set_Drop_outboundCheckbox("ON");
+    }
+    else {
+        Set_Drop_outboundCheckbox("OFF");
+    }
+    Set_Drop_chanceInput(preset2.Drop_Chance);
+    //bandwidth
+    if (preset2.BandwidthLimiter_Inbound == true) {
+        Set_Bandwidth_inboundCheckbox("ON");
+    }
+    else {
+        Set_Bandwidth_inboundCheckbox("OFF");
+    }
+    if (preset2.BandwidthLimiter_Outbound == true) {
+        Set_Bandwidth_outboundCheckbox("ON");
+    }
+    else {
+        Set_Bandwidth_outboundCheckbox("OFF");
+    }
+    Set_Bandwidth_bandwidthInput(preset2.BandwidthLimiter_Limit);
+    Set_Bandwidth_queueSizeInput(preset2.BandwidthLimiter_QueueSize);
+    Set_Bandwidth_speed(preset2.BandwidthLimiter_Size);
+    //Throttle
+    if (preset2.Throttle_Inbound == true) {
+        Set_Throttle_inboundCheckbox("ON");
+    }
+    else {
+        Set_Throttle_inboundCheckbox("OFF");
+    }
+    if (preset2.Throttle_Outbound == true) {
+        Set_Throttle_outboundCheckbox("ON");
+    }
+    else {
+        Set_Throttle_outboundCheckbox("OFF");
+    }
+    Set_Throttle_frameInput(preset2.Throttle_Timeframe);
+    Set_Throttle_frameInpchanceInputut(preset2.Throttle_Chance);
+    if (preset2.Throttle_DropThrottled == true) {
+        Set_Throttle_dropThrottledCheckbox("ON");
+    }
+    else {
+        Set_Throttle_dropThrottledCheckbox("OFF");
+    }
+    //Duplicate
+    if (preset2.Duplicate_Inbound == true) {
+        Set_Duplicate_inboundCheckbox("ON");
+    }
+    else {
+        Set_Duplicate_inboundCheckbox("OFF");
+    }
+    if (preset2.Duplicate_Outbound == true) {
+        Set_Duplicate_outboundCheckbox("ON");
+    }
+    else {
+        Set_Duplicate_outboundCheckbox("OFF");
+    }
+    Set_Duplicate_chanceInput(preset2.Duplicate_Chance);
+    Set_Duplicate_countInput(preset2.Duplicate_Count);
+    //OutOfOrdfer
+    if (preset2.OutOfOrder_Inbound == true) {
+        Set_OutOfOrder_inboundCheckbox("ON");
+    }
+    else {
+        Set_OutOfOrder_inboundCheckbox("OFF");
+    }
+    if (preset2.OutOfOrder_Outbound == true) {
+        Set_OutOfOrder_outboundCheckbox("ON");
+    }
+    else {
+        Set_OutOfOrder_outboundCheckbox("OFF");
+    }
+    Set_OutOfOrder_chanceInput(preset2.OutOfOrder_Chance);
+    //Tamper
+    if (preset2.Tamper_Inbound == true) {
+        Set_Tamper_inboundCheckbox("ON");
+    }
+    else {
+        Set_Tamper_inboundCheckbox("OFF");
+    }
+    if (preset2.Tamper_Outbound == true) {
+        Set_Tamper_outboundCheckbox("ON");
+    }
+    else {
+        Set_Tamper_outboundCheckbox("OFF");
+    }
+    Set_Tamper_chanceInput(preset2.Tamper_Chance);
+    if (preset2.Tamper_RedoChecksum == true) {
+        Set_Tamper_checksumCheckbox("ON");
+    }
+    else {
+        Set_Tamper_checksumCheckbox("OFF");
+    }
+    //Reset
+    if (preset2.SetTCPRST_Inbound == true) {
+        Set_Reset_inboundCheckbox("ON");
+    }
+    else {
+        Set_Reset_inboundCheckbox("OFF");
+    }
+    if (preset2.SetTCPRST_Outbound == true) {
+        Set_Reset_outboundCheckbox("ON");
+    }
+    else {
+        Set_Reset_outboundCheckbox("OFF");
+    }
+    Set_Reset_chanceInput(preset2.SetTCPRST_Chance);
+}
+void preset3_config(void) {
+    //lag
+    if (preset3.Lag_Inbound == true) {
+        Set_Lag_inboundCheckbox("ON");
+    }
+    else {
+        Set_Lag_inboundCheckbox("OFF");
+    }
+    if (preset3.Lag_Outbound == true) {
+        Set_Lag_outboundCheckbox("ON");
+    }
+    else {
+        Set_Lag_outboundCheckbox("OFF");
+    }
+    Set_Lag_timeInput(preset3.Lag_Delay);
+    //drop
+    if (preset3.Drop_Inbound == true) {
+        Set_Drop_inboundCheckbox("ON");
+    }
+    else {
+        Set_Drop_inboundCheckbox("OFF");
+    }
+    if (preset3.Drop_Outbound == true) {
+        Set_Drop_outboundCheckbox("ON");
+    }
+    else {
+        Set_Drop_outboundCheckbox("OFF");
+    }
+    Set_Drop_chanceInput(preset3.Drop_Chance);
+    //bandwidth
+    if (preset3.BandwidthLimiter_Inbound == true) {
+        Set_Bandwidth_inboundCheckbox("ON");
+    }
+    else {
+        Set_Bandwidth_inboundCheckbox("OFF");
+    }
+    if (preset3.BandwidthLimiter_Outbound == true) {
+        Set_Bandwidth_outboundCheckbox("ON");
+    }
+    else {
+        Set_Bandwidth_outboundCheckbox("OFF");
+    }
+    Set_Bandwidth_bandwidthInput(preset3.BandwidthLimiter_Limit);
+    Set_Bandwidth_queueSizeInput(preset3.BandwidthLimiter_QueueSize);
+    Set_Bandwidth_speed(preset3.BandwidthLimiter_Size);
+    //Throttle
+    if (preset3.Throttle_Inbound == true) {
+        Set_Throttle_inboundCheckbox("ON");
+    }
+    else {
+        Set_Throttle_inboundCheckbox("OFF");
+    }
+    if (preset3.Throttle_Outbound == true) {
+        Set_Throttle_outboundCheckbox("ON");
+    }
+    else {
+        Set_Throttle_outboundCheckbox("OFF");
+    }
+    Set_Throttle_frameInput(preset3.Throttle_Timeframe);
+    Set_Throttle_frameInpchanceInputut(preset3.Throttle_Chance);
+    if (preset3.Throttle_DropThrottled == true) {
+        Set_Throttle_dropThrottledCheckbox("ON");
+    }
+    else {
+        Set_Throttle_dropThrottledCheckbox("OFF");
+    }
+    //Duplicate
+    if (preset3.Duplicate_Inbound == true) {
+        Set_Duplicate_inboundCheckbox("ON");
+    }
+    else {
+        Set_Duplicate_inboundCheckbox("OFF");
+    }
+    if (preset3.Duplicate_Outbound == true) {
+        Set_Duplicate_outboundCheckbox("ON");
+    }
+    else {
+        Set_Duplicate_outboundCheckbox("OFF");
+    }
+    Set_Duplicate_chanceInput(preset3.Duplicate_Chance);
+    Set_Duplicate_countInput(preset3.Duplicate_Count);
+    //OutOfOrdfer
+    if (preset3.OutOfOrder_Inbound == true) {
+        Set_OutOfOrder_inboundCheckbox("ON");
+    }
+    else {
+        Set_OutOfOrder_inboundCheckbox("OFF");
+    }
+    if (preset3.OutOfOrder_Outbound == true) {
+        Set_OutOfOrder_outboundCheckbox("ON");
+    }
+    else {
+        Set_OutOfOrder_outboundCheckbox("OFF");
+    }
+    Set_OutOfOrder_chanceInput(preset3.OutOfOrder_Chance);
+    //Tamper
+    if (preset3.Tamper_Inbound == true) {
+        Set_Tamper_inboundCheckbox("ON");
+    }
+    else {
+        Set_Tamper_inboundCheckbox("OFF");
+    }
+    if (preset3.Tamper_Outbound == true) {
+        Set_Tamper_outboundCheckbox("ON");
+    }
+    else {
+        Set_Tamper_outboundCheckbox("OFF");
+    }
+    Set_Tamper_chanceInput(preset3.Tamper_Chance);
+    if (preset3.Tamper_RedoChecksum == true) {
+        Set_Tamper_checksumCheckbox("ON");
+    }
+    else {
+        Set_Tamper_checksumCheckbox("OFF");
+    }
+    //Reset
+    if (preset3.SetTCPRST_Inbound == true) {
+        Set_Reset_inboundCheckbox("ON");
+    }
+    else {
+        Set_Reset_inboundCheckbox("OFF");
+    }
+    if (preset3.SetTCPRST_Outbound == true) {
+        Set_Reset_outboundCheckbox("ON");
+    }
+    else {
+        Set_Reset_outboundCheckbox("OFF");
+    }
+    Set_Reset_chanceInput(preset3.SetTCPRST_Chance);
+}
+void preset4_config(void) {
+    //lag
+    if (preset4.Lag_Inbound == true) {
+        Set_Lag_inboundCheckbox("ON");
+    }
+    else {
+        Set_Lag_inboundCheckbox("OFF");
+    }
+    if (preset4.Lag_Outbound == true) {
+        Set_Lag_outboundCheckbox("ON");
+    }
+    else {
+        Set_Lag_outboundCheckbox("OFF");
+    }
+    Set_Lag_timeInput(preset4.Lag_Delay);
+    //drop
+    if (preset4.Drop_Inbound == true) {
+        Set_Drop_inboundCheckbox("ON");
+    }
+    else {
+        Set_Drop_inboundCheckbox("OFF");
+    }
+    if (preset4.Drop_Outbound == true) {
+        Set_Drop_outboundCheckbox("ON");
+    }
+    else {
+        Set_Drop_outboundCheckbox("OFF");
+    }
+    Set_Drop_chanceInput(preset4.Drop_Chance);
+    //bandwidth
+    if (preset4.BandwidthLimiter_Inbound == true) {
+        Set_Bandwidth_inboundCheckbox("ON");
+    }
+    else {
+        Set_Bandwidth_inboundCheckbox("OFF");
+    }
+    if (preset4.BandwidthLimiter_Outbound == true) {
+        Set_Bandwidth_outboundCheckbox("ON");
+    }
+    else {
+        Set_Bandwidth_outboundCheckbox("OFF");
+    }
+    Set_Bandwidth_bandwidthInput(preset4.BandwidthLimiter_Limit);
+    Set_Bandwidth_queueSizeInput(preset4.BandwidthLimiter_QueueSize);
+    Set_Bandwidth_speed(preset4.BandwidthLimiter_Size);
+    //Throttle
+    if (preset4.Throttle_Inbound == true) {
+        Set_Throttle_inboundCheckbox("ON");
+    }
+    else {
+        Set_Throttle_inboundCheckbox("OFF");
+    }
+    if (preset4.Throttle_Outbound == true) {
+        Set_Throttle_outboundCheckbox("ON");
+    }
+    else {
+        Set_Throttle_outboundCheckbox("OFF");
+    }
+    Set_Throttle_frameInput(preset4.Throttle_Timeframe);
+    Set_Throttle_frameInpchanceInputut(preset4.Throttle_Chance);
+    if (preset4.Throttle_DropThrottled == true) {
+        Set_Throttle_dropThrottledCheckbox("ON");
+    }
+    else {
+        Set_Throttle_dropThrottledCheckbox("OFF");
+    }
+    //Duplicate
+    if (preset4.Duplicate_Inbound == true) {
+        Set_Duplicate_inboundCheckbox("ON");
+    }
+    else {
+        Set_Duplicate_inboundCheckbox("OFF");
+    }
+    if (preset4.Duplicate_Outbound == true) {
+        Set_Duplicate_outboundCheckbox("ON");
+    }
+    else {
+        Set_Duplicate_outboundCheckbox("OFF");
+    }
+    Set_Duplicate_chanceInput(preset4.Duplicate_Chance);
+    Set_Duplicate_countInput(preset4.Duplicate_Count);
+    //OutOfOrdfer
+    if (preset4.OutOfOrder_Inbound == true) {
+        Set_OutOfOrder_inboundCheckbox("ON");
+    }
+    else {
+        Set_OutOfOrder_inboundCheckbox("OFF");
+    }
+    if (preset4.OutOfOrder_Outbound == true) {
+        Set_OutOfOrder_outboundCheckbox("ON");
+    }
+    else {
+        Set_OutOfOrder_outboundCheckbox("OFF");
+    }
+    Set_OutOfOrder_chanceInput(preset4.OutOfOrder_Chance);
+    //Tamper
+    if (preset4.Tamper_Inbound == true) {
+        Set_Tamper_inboundCheckbox("ON");
+    }
+    else {
+        Set_Tamper_inboundCheckbox("OFF");
+    }
+    if (preset4.Tamper_Outbound == true) {
+        Set_Tamper_outboundCheckbox("ON");
+    }
+    else {
+        Set_Tamper_outboundCheckbox("OFF");
+    }
+    Set_Tamper_chanceInput(preset4.Tamper_Chance);
+    if (preset4.Tamper_RedoChecksum == true) {
+        Set_Tamper_checksumCheckbox("ON");
+    }
+    else {
+        Set_Tamper_checksumCheckbox("OFF");
+    }
+    //Reset
+    if (preset4.SetTCPRST_Inbound == true) {
+        Set_Reset_inboundCheckbox("ON");
+    }
+    else {
+        Set_Reset_inboundCheckbox("OFF");
+    }
+    if (preset4.SetTCPRST_Outbound == true) {
+        Set_Reset_outboundCheckbox("ON");
+    }
+    else {
+        Set_Reset_outboundCheckbox("OFF");
+    }
+    Set_Reset_chanceInput(preset4.SetTCPRST_Chance);
+}
+void preset5_config(void) {
+    //lag
+    if (preset5.Lag_Inbound == true) {
+        Set_Lag_inboundCheckbox("ON");
+    }
+    else {
+        Set_Lag_inboundCheckbox("OFF");
+    }
+    if (preset5.Lag_Outbound == true) {
+        Set_Lag_outboundCheckbox("ON");
+    }
+    else {
+        Set_Lag_outboundCheckbox("OFF");
+    }
+    Set_Lag_timeInput(preset5.Lag_Delay);
+    //drop
+    if (preset5.Drop_Inbound == true) {
+        Set_Drop_inboundCheckbox("ON");
+    }
+    else {
+        Set_Drop_inboundCheckbox("OFF");
+    }
+    if (preset5.Drop_Outbound == true) {
+        Set_Drop_outboundCheckbox("ON");
+    }
+    else {
+        Set_Drop_outboundCheckbox("OFF");
+    }
+    Set_Drop_chanceInput(preset5.Drop_Chance);
+    //bandwidth
+    if (preset5.BandwidthLimiter_Inbound == true) {
+        Set_Bandwidth_inboundCheckbox("ON");
+    }
+    else {
+        Set_Bandwidth_inboundCheckbox("OFF");
+    }
+    if (preset5.BandwidthLimiter_Outbound == true) {
+        Set_Bandwidth_outboundCheckbox("ON");
+    }
+    else {
+        Set_Bandwidth_outboundCheckbox("OFF");
+    }
+    Set_Bandwidth_bandwidthInput(preset5.BandwidthLimiter_Limit);
+    Set_Bandwidth_queueSizeInput(preset5.BandwidthLimiter_QueueSize);
+    Set_Bandwidth_speed(preset5.BandwidthLimiter_Size);
+    //Throttle
+    if (preset5.Throttle_Inbound == true) {
+        Set_Throttle_inboundCheckbox("ON");
+    }
+    else {
+        Set_Throttle_inboundCheckbox("OFF");
+    }
+    if (preset5.Throttle_Outbound == true) {
+        Set_Throttle_outboundCheckbox("ON");
+    }
+    else {
+        Set_Throttle_outboundCheckbox("OFF");
+    }
+    Set_Throttle_frameInput(preset5.Throttle_Timeframe);
+    Set_Throttle_frameInpchanceInputut(preset5.Throttle_Chance);
+    if (preset5.Throttle_DropThrottled == true) {
+        Set_Throttle_dropThrottledCheckbox("ON");
+    }
+    else {
+        Set_Throttle_dropThrottledCheckbox("OFF");
+    }
+    //Duplicate
+    if (preset5.Duplicate_Inbound == true) {
+        Set_Duplicate_inboundCheckbox("ON");
+    }
+    else {
+        Set_Duplicate_inboundCheckbox("OFF");
+    }
+    if (preset5.Duplicate_Outbound == true) {
+        Set_Duplicate_outboundCheckbox("ON");
+    }
+    else {
+        Set_Duplicate_outboundCheckbox("OFF");
+    }
+    Set_Duplicate_chanceInput(preset5.Duplicate_Chance);
+    Set_Duplicate_countInput(preset5.Duplicate_Count);
+    //OutOfOrdfer
+    if (preset5.OutOfOrder_Inbound == true) {
+        Set_OutOfOrder_inboundCheckbox("ON");
+    }
+    else {
+        Set_OutOfOrder_inboundCheckbox("OFF");
+    }
+    if (preset5.OutOfOrder_Outbound == true) {
+        Set_OutOfOrder_outboundCheckbox("ON");
+    }
+    else {
+        Set_OutOfOrder_outboundCheckbox("OFF");
+    }
+    Set_OutOfOrder_chanceInput(preset5.OutOfOrder_Chance);
+    //Tamper
+    if (preset5.Tamper_Inbound == true) {
+        Set_Tamper_inboundCheckbox("ON");
+    }
+    else {
+        Set_Tamper_inboundCheckbox("OFF");
+    }
+    if (preset5.Tamper_Outbound == true) {
+        Set_Tamper_outboundCheckbox("ON");
+    }
+    else {
+        Set_Tamper_outboundCheckbox("OFF");
+    }
+    Set_Tamper_chanceInput(preset5.Tamper_Chance);
+    if (preset5.Tamper_RedoChecksum == true) {
+        Set_Tamper_checksumCheckbox("ON");
+    }
+    else {
+        Set_Tamper_checksumCheckbox("OFF");
+    }
+    //Reset
+    if (preset5.SetTCPRST_Inbound == true) {
+        Set_Reset_inboundCheckbox("ON");
+    }
+    else {
+        Set_Reset_inboundCheckbox("OFF");
+    }
+    if (preset5.SetTCPRST_Outbound == true) {
+        Set_Reset_outboundCheckbox("ON");
+    }
+    else {
+        Set_Reset_outboundCheckbox("OFF");
+    }
+    Set_Reset_chanceInput(preset5.SetTCPRST_Chance);
 }
 
 static int uiFilterTextCb(Ihandle *ih)  {
@@ -501,11 +2191,123 @@ static void uiSetupModule(Module *module, Ihandle *parent) {
     }
 }
 
+// Thread function
+DWORD WINAPI threadFunction(LPVOID lpParam) {
+    UNREFERENCED_PARAMETER(lpParam);
+    printf("Hello from the thread!\n");
+    BOOL keyToggled = FALSE; // Track the toggle state
+    BOOL keyCurrentlyDown = FALSE; // Track the current key state
+    while (1) {
+ 
+        wchar_t wch;
+
+        // Convert the first character of Keybind to wchar_t
+        size_t convertedChars = 0;
+        mbstowcs_s(&convertedChars, &wch, 1, general.Keybind, _TRUNCATE);
+    
+        if (convertedChars > 0) {
+       
+                mbstowcs(&wch, general.Keybind, 1);
+                // Convert character to a virtual-key code using VkKeyScanW
+                SHORT vkScan = VkKeyScanW(wch);
+
+                // Extract the virtual-key code
+                int vkCode = LOBYTE(vkScan);
+                // Check if the key was found
+                if (vkScan == -1) {
+                    return 1;
+                }
+            BOOL isKeyDown = (GetAsyncKeyState(vkCode) & 0x8000) != 0; // 0x53 is the virtual key code for 'S' 0x5A = 'Z', 0xDB = '['
+
+            if (isKeyDown && !keyCurrentlyDown) {
+                // Key was just pressed
+                keyToggled = !keyToggled; // Toggle the state
+                keyCurrentlyDown = TRUE; // Set the key state to down
+                printf("Key [ toggled to %s!\n", keyToggled ? "ON" : "OFF");
+                if (running) {
+                    uiStopCb(filterButton);
+                }
+                else {
+                    uiStartCb(filterButton);
+                }
+            }
+            else if (!isKeyDown && keyCurrentlyDown) {
+                // Key was just released
+                keyCurrentlyDown = FALSE; // Set the key state to up
+            }
+        }
+
+        Sleep(10); // Sleep to reduce CPU usage
+    }
+
+    return 0;
+}
+
+
 int main(int argc, char* argv[]) {
+
+    
+
+    if (ini_parse("presets.ini", handler1, &preset1) < 0) {
+        return 1;
+    }
+    if (ini_parse("presets.ini", handler2, &preset2) < 0) {
+        return 1;
+    }
+    if (ini_parse("presets.ini", handler3, &general) < 0) {
+        return 1;
+    }
+    if (ini_parse("presets.ini", handler4, &preset3) < 0) {
+        return 1;
+    }
+    if (ini_parse("presets.ini", handler5, &preset4) < 0) {
+        return 1;
+    }
+    if (ini_parse("presets.ini", handler6, &preset5) < 0) {
+        return 1;
+    }
+
+    LOG("Config loaded from 'presets.ini': keybind=%c\n", general.Keybind);
+
+
+
+
+
     LOG("Is Run As Admin: %d", IsRunAsAdmin());
     LOG("Is Elevated: %d", IsElevated());
     init(argc, argv);
+
+    HANDLE thread;
+    DWORD threadId;
+
+    // Create a new thread
+    thread = CreateThread(NULL, 0, threadFunction, NULL, 0, &threadId);
+    if (thread == NULL) {
+        printf("Error creating thread\n");
+        return 1;
+    }
+
+    // Calculate the length needed for the attributes string
+    int len = snprintf(NULL, 0, "1=%s, 2=%s, 3=%s, 4=%s, 5=%s", preset1.PresetName, preset2.PresetName, preset3.PresetName, preset4.PresetName, preset5.PresetName) + 1;
+    char* attributes = (char*)malloc(len);
+
+    // Construct the attribute string
+    snprintf(attributes, len, "1=%s, 2=%s, 3=%s, 4=%s, 5=%s", preset1.PresetName, preset2.PresetName, preset3.PresetName, preset4.PresetName, preset5.PresetName);
+
+    // Set the attributes
+    IupSetAttributes(filterSelectList3, attributes);
+
+
+   // IupSetAttribute(filterSelectList3, "VALUE", "1");
+
+    // Free the allocated memory
+    free(attributes);
     startup();
+    // Wait for the thread to finish
+    //WaitForSingleObject(thread, INFINITE);
+    CloseHandle(thread);
     cleanup();
+
+
     return 0;
 }

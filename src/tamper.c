@@ -131,3 +131,17 @@ Module tamperModule = {
     // runtime fields
     0, 0, NULL
 };
+
+
+void Set_Tamper_inboundCheckbox(const char* value) {
+    IupSetAttribute(inboundCheckbox, "VALUE", value);
+}
+void Set_Tamper_outboundCheckbox(const char* value) {
+    IupSetAttribute(outboundCheckbox, "VALUE", value);
+}
+void Set_Tamper_chanceInput(const char* value) {
+    IupSetAttribute(chanceInput, "VALUE", value);
+}
+void Set_Tamper_checksumCheckbox(const char* value) {
+    IupSetAttribute(checksumCheckbox, "VALUE", value);
+}

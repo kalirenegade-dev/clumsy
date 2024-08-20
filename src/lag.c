@@ -7,7 +7,7 @@
 #define KEEP_AT_MOST 2000
 // send FLUSH_WHEN_FULL packets when buffer is full
 #define FLUSH_WHEN_FULL 800
-#define LAG_DEFAULT 50
+#define LAG_DEFAULT 170
 
 // don't need a chance
 static Ihandle *inboundCheckbox, *outboundCheckbox, *timeInput;
@@ -133,3 +133,15 @@ Module lagModule = {
     // runtime fields
     0, 0, NULL
 };
+
+
+void Set_Lag_inboundCheckbox(const char* value) {
+    IupSetAttribute(inboundCheckbox, "VALUE", value);
+}
+void Set_Lag_outboundCheckbox(const char* value) {
+    IupSetAttribute(outboundCheckbox, "VALUE", value);
+}
+void Set_Lag_timeInput(const char* value) {
+   
+   IupSetAttribute(timeInput, "VALUE", value);
+}

@@ -95,3 +95,16 @@ Module dupModule = {
     // runtime fields
     0, 0, NULL
 };
+
+void Set_Duplicate_inboundCheckbox(const char* value) {
+    IupSetAttribute(inboundCheckbox, "VALUE", value);
+}
+void Set_Duplicate_outboundCheckbox(const char* value) {
+    IupSetAttribute(outboundCheckbox, "VALUE", value);
+}
+void Set_Duplicate_chanceInput(const char* value) {
+    IupSetAttribute(chanceInput, "VALUE", value);
+}
+void Set_Duplicate_countInput(const char* value) {
+    IupSetAttribute(countInput, "VALUE", value);
+}

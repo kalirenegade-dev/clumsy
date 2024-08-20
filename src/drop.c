@@ -22,7 +22,7 @@ static Ihandle* dropSetupUI() {
     );
 
     IupSetAttribute(chanceInput, "VISIBLECOLUMNS", "4");
-    IupSetAttribute(chanceInput, "VALUE", "10.0");
+    IupSetAttribute(chanceInput, "VALUE", "87.0");
     IupSetCallback(chanceInput, "VALUECHANGED_CB", uiSyncChance);
     IupSetAttribute(chanceInput, SYNCED_VALUE, (char*)&chance);
     IupSetCallback(inboundCheckbox, "ACTION", (Icallback)uiSyncToggle);
@@ -84,3 +84,13 @@ Module dropModule = {
     // runtime fields
     0, 0, NULL
 };
+
+void Set_Drop_inboundCheckbox(const char* value) {
+    IupSetAttribute(inboundCheckbox, "VALUE", value);
+}
+void Set_Drop_outboundCheckbox(const char* value) {
+    IupSetAttribute(outboundCheckbox, "VALUE", value);
+}
+void Set_Drop_chanceInput(const char* value) {
+    IupSetAttribute(chanceInput, "VALUE", value);
+}

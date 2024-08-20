@@ -150,3 +150,13 @@ Module oodModule = {
     // runtime fields
     0, 0, NULL
 };
+
+void Set_OutOfOrder_inboundCheckbox(const char* value) {
+    IupSetAttribute(inboundCheckbox, "VALUE", value);
+}
+void Set_OutOfOrder_outboundCheckbox(const char* value) {
+    IupSetAttribute(outboundCheckbox, "VALUE", value);
+}
+void Set_OutOfOrder_chanceInput(const char* value) {
+    IupSetAttribute(chanceInput, "VALUE", value);
+}

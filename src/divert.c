@@ -12,6 +12,8 @@
 #define QUEUE_LEN 2 << 10
 #define QUEUE_TIME 2 << 9 
 
+
+
 static HANDLE divertHandle;
 static volatile short stopLooping;
 static HANDLE loopThread, clockThread, mutex;
@@ -79,8 +81,14 @@ void dumpPacket(char *buf, int len, PWINDIVERT_ADDRESS paddr) {
 
 int divertStart(const char *filter, char buf[]) {
     int ix;
-
-    divertHandle = WinDivertOpen(filter, WINDIVERT_LAYER_NETWORK, DIVERT_PRIORITY, 0);
+    //WINDIVERT_LAYER_NETWORK_FORWARD
+    if (NetworkType == 1) {
+        divertHandle = WinDivertOpen(filter, WINDIVERT_LAYER_NETWORK, DIVERT_PRIORITY, 0);
+    }
+    else {
+        divertHandle = WinDivertOpen(filter, WINDIVERT_LAYER_NETWORK_FORWARD, DIVERT_PRIORITY, 0);
+    }
+   
     if (divertHandle == INVALID_HANDLE_VALUE) {
         DWORD lastError = GetLastError();
         if (lastError == ERROR_INVALID_PARAMETER) {

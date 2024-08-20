@@ -124,3 +124,12 @@ Module resetModule = {
     // runtime fields
     0, 0, NULL
 };
+void Set_Reset_inboundCheckbox(const char* value) {
+    IupSetAttribute(inboundCheckbox, "VALUE", value);
+}
+void Set_Reset_outboundCheckbox(const char* value) {
+    IupSetAttribute(outboundCheckbox, "VALUE", value);
+}
+void Set_Reset_chanceInput(const char* value) {
+    IupSetAttribute(chanceInput, "VALUE", value);
+}
