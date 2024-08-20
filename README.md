@@ -1,8 +1,13 @@
 This version adds some additional features such as the following:
+
 hotkey toggles (custom keybind)
+
 function presets (save and set variables)
+
 updated bandwidth module with a queue for bandwidth limit (with a KB/MB toggle) based off of https://github.com/kuhnliu/clumsy
+
 Hotspot support (with the ability to toggle local/remore) based off of https://github.com/abaza121/clumsy-hotspot
+
 
 # clumsy
 
