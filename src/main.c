@@ -15,14 +15,19 @@
 #include "reset.h"
 #include "tamper.h"
 #include "throttle.h"
-int running = 0;
+#include "disconnect.h"
+#include <process.h> 
 
+int running = 0;
+int Mode = 0;
+char timerbuffer[6];
 
 void preset1_config(void);
 void preset2_config(void);
 void preset3_config(void);
 void preset4_config(void);
 void preset5_config(void);
+void intToStr(int num, char* str);
 
 
 
@@ -38,6 +43,8 @@ typedef struct {
     bool Drop_Inbound;
     bool Drop_Outbound;
     const char* Drop_Chance;
+    bool Disconnect_Inbound;
+    bool Disconnect_Outbound;
     const char* BandwidthLimiter_QueueSize;
     const char* BandwidthLimiter_Size;
     bool BandwidthLimiter_Inbound;
@@ -72,6 +79,8 @@ typedef struct {
     bool Drop_Inbound;
     bool Drop_Outbound;
     const char* Drop_Chance;
+    bool Disconnect_Inbound;
+    bool Disconnect_Outbound;
     const char* BandwidthLimiter_QueueSize;
     const char* BandwidthLimiter_Size;
     bool BandwidthLimiter_Inbound;
@@ -106,6 +115,8 @@ typedef struct {
     bool Drop_Inbound;
     bool Drop_Outbound;
     const char* Drop_Chance;
+    bool Disconnect_Inbound;
+    bool Disconnect_Outbound;
     const char* BandwidthLimiter_QueueSize;
     const char* BandwidthLimiter_Size;
     bool BandwidthLimiter_Inbound;
@@ -140,6 +151,8 @@ typedef struct {
     bool Drop_Inbound;
     bool Drop_Outbound;
     const char* Drop_Chance;
+    bool Disconnect_Inbound;
+    bool Disconnect_Outbound;
     const char* BandwidthLimiter_QueueSize;
     const char* BandwidthLimiter_Size;
     bool BandwidthLimiter_Inbound;
@@ -174,6 +187,8 @@ typedef struct {
     bool Drop_Inbound;
     bool Drop_Outbound;
     const char* Drop_Chance;
+    bool Disconnect_Inbound;
+    bool Disconnect_Outbound;
     const char* BandwidthLimiter_QueueSize;
     const char* BandwidthLimiter_Size;
     bool BandwidthLimiter_Inbound;
@@ -218,6 +233,8 @@ Preset1 preset1 = {
     .Drop_Inbound = false,
     .Drop_Outbound = false,
     .Drop_Chance = "0",
+    .Disconnect_Inbound = false,
+    .Disconnect_Outbound = false,
     .BandwidthLimiter_QueueSize = "0",
     .BandwidthLimiter_Size = "kb",
     .BandwidthLimiter_Inbound = false,
@@ -253,6 +270,8 @@ Preset2 preset2 = {
     .Drop_Inbound = false,
     .Drop_Outbound = false,
     .Drop_Chance = "0",
+    .Disconnect_Inbound = false,
+    .Disconnect_Outbound = false,
     .BandwidthLimiter_QueueSize = "0",
     .BandwidthLimiter_Size = "kb",
     .BandwidthLimiter_Inbound = false,
@@ -280,7 +299,7 @@ Preset2 preset2 = {
 };
 
 // Initialize Preset1 structure with default values
-Preset2 preset3 = {
+Preset3 preset3 = {
     .PresetName = "Preset3",
     .Lag_Inbound = false,
     .Lag_Outbound = false,
@@ -288,6 +307,8 @@ Preset2 preset3 = {
     .Drop_Inbound = false,
     .Drop_Outbound = false,
     .Drop_Chance = "0",
+    .Disconnect_Inbound = false,
+    .Disconnect_Outbound = false,
     .BandwidthLimiter_QueueSize = "0",
     .BandwidthLimiter_Size = "kb",
     .BandwidthLimiter_Inbound = false,
@@ -315,7 +336,7 @@ Preset2 preset3 = {
 };
 
 // Initialize Preset1 structure with default values
-Preset2 preset4 = {
+Preset4 preset4 = {
     .PresetName = "Preset4",
     .Lag_Inbound = false,
     .Lag_Outbound = false,
@@ -323,6 +344,8 @@ Preset2 preset4 = {
     .Drop_Inbound = false,
     .Drop_Outbound = false,
     .Drop_Chance = "0",
+    .Disconnect_Inbound = false,
+    .Disconnect_Outbound = false,
     .BandwidthLimiter_QueueSize = "0",
     .BandwidthLimiter_Size = "kb",
     .BandwidthLimiter_Inbound = false,
@@ -350,7 +373,7 @@ Preset2 preset4 = {
 };
 
 // Initialize Preset1 structure with default values
-Preset2 preset5 = {
+Preset5 preset5 = {
     .PresetName = "Preset5",
     .Lag_Inbound = false,
     .Lag_Outbound = false,
@@ -358,6 +381,8 @@ Preset2 preset5 = {
     .Drop_Inbound = false,
     .Drop_Outbound = false,
     .Drop_Chance = "0",
+    .Disconnect_Inbound = false,
+    .Disconnect_Outbound = false,
     .BandwidthLimiter_QueueSize = "0",
     .BandwidthLimiter_Size = "kb",
     .BandwidthLimiter_Inbound = false,
@@ -430,6 +455,12 @@ static int handler1(void* user, const char* section, const char* name, const cha
     }
     else if (MATCH("Preset1", "Drop_Chance")) {
         pconfig1->Drop_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset1", "Disconnect_Inbound")) {
+        pconfig1->Disconnect_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset1", "Disconnect_Outbound")) {
+        pconfig1->Disconnect_Outbound = strcmp(value, "true") == 0;
     }
     else if (MATCH("Preset1", "BandwidthLimiter_QueueSize")) {
         pconfig1->BandwidthLimiter_QueueSize = _strdup(value);
@@ -537,6 +568,12 @@ static int handler2(void* user, const char* section, const char* name, const cha
     else if (MATCH("Preset2", "Drop_Chance")) {
         pconfig2->Drop_Chance = _strdup(value);
     }
+    else if (MATCH("Preset2", "Disconnect_Inbound")) {
+       pconfig2->Disconnect_Inbound = strcmp(value, "true") == 0;
+   }
+    else if (MATCH("Preset2", "Disconnect_Outbound")) {
+       pconfig2->Disconnect_Outbound = strcmp(value, "true") == 0;
+   }
     else if (MATCH("Preset2", "BandwidthLimiter_QueueSize")) {
         pconfig2->BandwidthLimiter_QueueSize = _strdup(value);
     }
@@ -641,6 +678,12 @@ static int handler4(void* user, const char* section, const char* name, const cha
     }
     else if (MATCH("Preset3", "Drop_Chance")) {
         pconfig3->Drop_Chance = _strdup(value);
+    }
+    else if (MATCH("Preset3", "Disconnect_Inbound")) {
+        pconfig3->Disconnect_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset3", "Disconnect_Outbound")) {
+        pconfig3->Disconnect_Outbound = strcmp(value, "true") == 0;
     }
     else if (MATCH("Preset3", "BandwidthLimiter_QueueSize")) {
         pconfig3->BandwidthLimiter_QueueSize = _strdup(value);
@@ -747,6 +790,12 @@ static int handler5(void* user, const char* section, const char* name, const cha
     else if (MATCH("Preset4", "Drop_Chance")) {
         pconfig4->Drop_Chance = _strdup(value);
     }
+    else if (MATCH("Preset4", "Disconnect_Inbound")) {
+        pconfig4->Disconnect_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset4", "Disconnect_Outbound")) {
+        pconfig4->Disconnect_Outbound = strcmp(value, "true") == 0;
+    }
     else if (MATCH("Preset4", "BandwidthLimiter_QueueSize")) {
         pconfig4->BandwidthLimiter_QueueSize = _strdup(value);
     }
@@ -852,6 +901,12 @@ static int handler6(void* user, const char* section, const char* name, const cha
     else if (MATCH("Preset5", "Drop_Chance")) {
         pconfig5->Drop_Chance = _strdup(value);
     }
+    else if (MATCH("Preset5", "Disconnect_Inbound")) {
+        pconfig5->Disconnect_Inbound = strcmp(value, "true") == 0;
+    }
+    else if (MATCH("Preset5", "Disconnect_Outbound")) {
+        pconfig5->Disconnect_Outbound = strcmp(value, "true") == 0;
+    }
     else if (MATCH("Preset5", "BandwidthLimiter_QueueSize")) {
         pconfig5->BandwidthLimiter_QueueSize = _strdup(value);
     }
@@ -935,6 +990,7 @@ static int handler6(void* user, const char* section, const char* name, const cha
 Module* modules[MODULE_CNT] = {
     &lagModule,
     &dropModule,
+    &disconnectModule,
     &bandwidthModule,
     &throttleModule,
     &dupModule,
@@ -951,10 +1007,20 @@ static Ihandle *statusLabel;
 static Ihandle* filterText, * filterButton;
 static Ihandle* label1, * label2;
 
+// Function prototype for timer callback
+static int timerDelayCb(Ihandle* ih);
+
 
 Ihandle* filterSelectList;
 Ihandle* filterSelectList2;
 Ihandle* filterSelectList3;
+Ihandle* filterSelectList4;
+Ihandle* filterSelectList5;
+
+int DelayTimerValue=1000;
+
+
+Ihandle* TimerLabel;
 
 // timer to update icons
 static Ihandle *stateIcon;
@@ -970,6 +1036,12 @@ static int uiTimeoutCb(Ihandle *ih);
 static int uiListSelectCb(Ihandle* ih, char* text, int item, int state);
 static int uiList2SelectCb(Ihandle* ih, char* text, int item, int state);
 static int uiList3SelectCb(Ihandle* ih, char* text, int item, int state);
+static int uiList4SelectCb(Ihandle* ih, char* text, int item, int state);
+static int uiList5SelectCb(Ihandle* ih, char* text, int item, int state);
+
+
+
+
 
 
 static int uiFilterTextCb(Ihandle *ih);
@@ -1091,22 +1163,35 @@ void init(int argc, char* argv[]) {
 
     
       controlHbox = IupHbox(
-        IupLabel("Function Presets:  "),
-        filterSelectList3 = IupList(NULL),
-        IupFill(),
+          IupLabel("Function Presets:  "),
+          filterSelectList3 = IupList(NULL),
+          IupFill(),
+
+          IupLabel("Trigger Mode"),
+          filterSelectList4 = IupList(NULL),
+
+          IupFill(),
+
+          TimerLabel = IupLabel("Timer:"),
+          filterSelectList5 = IupList(NULL),
         NULL
     );
 
+     
+      
+      //filterSelectList5
     lowerMiddleFrame = IupFrame(
-        controlHbox
+        controlHbox 
   
     );
+    IupHide(filterSelectList5);
+    IupHide(TimerLabel);
 
     // Define the keybind as a constant character string
-    const char* keybind =general.Keybind;
+    const char* keybind = general.Keybind;
 
     // Base text with placeholder for the keybind variable
-    const char* baseText = "Use the key %s to toggle on/off\nThis is a modified version of clumsy to use hotkeys to toggle on/off coded by kalirenegade";
+    const char* baseText = "Use the key %s to toggle on/off\nThis is a modified version of clumsy to use hotkeys to toggle on/off coded by kalirenegade\nIf you like these updates and want to show your appreciation, feel free to donate with cashapp $kalirenegade";
 
     // Calculate the length needed for the formatted string
     int len = snprintf(NULL, 0, baseText, keybind) + 1;
@@ -1159,8 +1244,8 @@ void init(int argc, char* argv[]) {
 
     IupSetAttribute(filterSelectList2, "VISIBLECOLUMNS", "15");
     IupSetAttribute(filterSelectList2, "DROPDOWN", "YES");
-    IupSetAttributes(filterSelectList2, "1=LAYER_NETWORK, 2=LAYER_NETWORK_FORWARD");
-    IupSetAttribute(filterSelectList2, "VALUE", "1");
+    IupSetAttributes(filterSelectList2, "1=(Local)_This_Device, 2=(Remote)_Shared_Devices");
+    IupSetAttribute(filterSelectList2, "VALUE", "2");
     IupSetCallback(filterSelectList2, "ACTION", (Icallback)uiList2SelectCb);
 
     for (ix = 0; ix < filtersSize; ++ix) {
@@ -1169,6 +1254,10 @@ void init(int argc, char* argv[]) {
         IupStoreAttribute(filterSelectList, ixBuf, filters[ix].filterName);
     }
     IupSetAttribute(filterSelectList, "VALUE", "1");
+
+    IupSetAttribute(filterSelectList3, "VALUE", "1");
+    IupSetAttribute(filterSelectList4, "VALUE", "1");
+
     IupSetCallback(filterSelectList, "ACTION", (Icallback)uiListSelectCb);
     // set filter text value since the callback won't take effect before main loop starts
     IupSetAttribute(filterText, "VALUE", filters[0].filterValue);
@@ -1209,8 +1298,17 @@ void init(int argc, char* argv[]) {
     IupSetAttribute(lowerMiddleFrame, "EXPAND", "HORIZONTAL");
     IupSetAttribute(filterSelectList3, "VISIBLECOLUMNS", "15");
     IupSetAttribute(filterSelectList3, "DROPDOWN", "YES");
-
     IupSetCallback(filterSelectList3, "ACTION", (Icallback)uiList3SelectCb);
+
+    IupSetAttribute(filterSelectList4, "VISIBLECOLUMNS", "4");
+    IupSetAttribute(filterSelectList4, "DROPDOWN", "YES");
+    IupSetCallback(filterSelectList4, "ACTION", (Icallback)uiList4SelectCb);
+
+    IupSetAttribute(filterSelectList5, "VISIBLECOLUMNS", "2");
+    IupSetAttribute(filterSelectList5, "DROPDOWN", "YES");
+    IupSetCallback(filterSelectList5, "ACTION", (Icallback)uiList5SelectCb);
+
+
 
     
     // setup module uis
@@ -1355,27 +1453,50 @@ static int uiOnDialogShow(Ihandle *ih, int state) {
     }
 
     return exit ? IUP_CLOSE : IUP_DEFAULT;
-}
+}static int uiStartCb(Ihandle* ih) {
+    if (Mode == 0) {
+        running = 1;
+        char buf[MSG_BUFSIZE];
+        UNREFERENCED_PARAMETER(ih);
+        if (divertStart(IupGetAttribute(filterText, "VALUE"), buf) == 0) {
+            showStatus(buf);
+            return IUP_DEFAULT;
+        }
 
-static int uiStartCb(Ihandle *ih) {
-    running = 1;
-    char buf[MSG_BUFSIZE];
-    UNREFERENCED_PARAMETER(ih);
-    if (divertStart(IupGetAttribute(filterText, "VALUE"), buf) == 0) {
-        showStatus(buf);
+        // Successfully started
+        showStatus("Started filtering. Enable functionalities to take effect.");
+        IupSetAttribute(filterText, "ACTIVE", "NO");
+        IupSetAttribute(filterButton, "TITLE", "Stop");
+        IupSetCallback(filterButton, "ACTION", uiStopCb);
+        IupSetAttribute(timer, "RUN", "NO");
         return IUP_DEFAULT;
     }
+    else {
+        running = 1;
+        char buf[MSG_BUFSIZE];
+        UNREFERENCED_PARAMETER(ih);
+        if (divertStart(IupGetAttribute(filterText, "VALUE"), buf) == 0) {
+            showStatus(buf);
+            return IUP_DEFAULT;
+        }
 
-    // successfully started
-    showStatus("Started filtering. Enable functionalities to take effect.");
-    IupSetAttribute(filterText, "ACTIVE", "NO");
-    IupSetAttribute(filterButton, "TITLE", "Stop");
-    IupSetCallback(filterButton, "ACTION", uiStopCb);
-    IupSetAttribute(timer, "RUN", "YES");
+        // Successfully started
+        showStatus("Started filtering. Enable functionalities to take effect.");
+        IupSetAttribute(filterText, "ACTIVE", "NO");
+        IupSetAttribute(filterButton, "TITLE", "Stop");
+        IupSetCallback(filterButton, "ACTION", uiStopCb);
+        IupSetAttribute(timer, "RUN", "YES");
 
-    return IUP_DEFAULT;
+        // Create and configure the timer
+        Ihandle* delayTimer = IupTimer();
+        intToStr(DelayTimerValue, timerbuffer);
+        IupSetAttribute(delayTimer, "TIME", timerbuffer);
+        IupSetCallback(delayTimer, "ACTION_CB", timerDelayCb);
+        IupSetAttribute(delayTimer, "RUN", "YES");
+
+        return IUP_DEFAULT;
+    }
 }
-
 static int uiStopCb(Ihandle *ih) {
     running = 0;
     int ix;
@@ -1458,10 +1579,46 @@ static int uiListSelectCb(Ihandle* ih, char* text, int item, int state) {
 static int uiList2SelectCb(Ihandle* ih, char* text, int item, int state) {
     UNREFERENCED_PARAMETER(text);
     UNREFERENCED_PARAMETER(ih);
-    // Use state if needed, or remove the comment
+    UNREFERENCED_PARAMETER(state);
+    NetworkType = item;
+ 
+    return IUP_DEFAULT;
+}
+
+static int uiList4SelectCb(Ihandle* ih, char* text, int item, int state) {
+    UNREFERENCED_PARAMETER(text);
+    UNREFERENCED_PARAMETER(ih);
+    UNREFERENCED_PARAMETER(item);
+    UNREFERENCED_PARAMETER(state);
+
     if (state == 1) {
-        NetworkType = item;
+        if (strcmp(text, "Toggle") == 0) {
+            IupHide(filterSelectList5);
+            IupHide(TimerLabel);
+            Mode = 0;
+        }
+        else if (strcmp(text, "Timer") == 0) {
+            IupShow(filterSelectList5);
+            IupShow(TimerLabel);
+            Mode = 1;
+        }
     }
+    return IUP_DEFAULT;
+}
+
+static int uiList5SelectCb(Ihandle* ih, char* text, int item, int state) {
+    UNREFERENCED_PARAMETER(ih);
+    UNREFERENCED_PARAMETER(item);
+    UNREFERENCED_PARAMETER(state);
+
+    if (state == 1) {
+        int seconds = atoi(text);  // Convert the text to an integer
+
+        if (seconds >= 1 && seconds <= 60) {
+            DelayTimerValue = seconds*1000;
+        }
+    }
+
     return IUP_DEFAULT;
 }
 
@@ -1529,6 +1686,19 @@ void preset1_config(void) {
         Set_Drop_outboundCheckbox("OFF");
     }
     Set_Drop_chanceInput(preset1.Drop_Chance);
+    //Disconnect
+    if (preset1.Disconnect_Inbound == true) {
+        Set_Disconnect_inboundCheckbox("ON");
+    }
+    else {
+        Set_Disconnect_inboundCheckbox("OFF");
+    }
+    if (preset1.Disconnect_Outbound == true) {
+        Set_Disconnect_outboundCheckbox("ON");
+    }
+    else {
+        Set_Disconnect_outboundCheckbox("OFF");
+    }
     //bandwidth
     if (preset1.BandwidthLimiter_Inbound == true) {
         Set_Bandwidth_inboundCheckbox("ON");
@@ -1660,6 +1830,19 @@ void preset2_config(void) {
         Set_Drop_outboundCheckbox("OFF");
     }
     Set_Drop_chanceInput(preset2.Drop_Chance);
+    //Disconnect
+    if (preset2.Disconnect_Inbound == true) {
+        Set_Disconnect_inboundCheckbox("ON");
+    }
+    else {
+        Set_Disconnect_inboundCheckbox("OFF");
+    }
+    if (preset2.Disconnect_Outbound == true) {
+        Set_Disconnect_outboundCheckbox("ON");
+    }
+    else {
+        Set_Disconnect_outboundCheckbox("OFF");
+    }
     //bandwidth
     if (preset2.BandwidthLimiter_Inbound == true) {
         Set_Bandwidth_inboundCheckbox("ON");
@@ -1790,6 +1973,19 @@ void preset3_config(void) {
         Set_Drop_outboundCheckbox("OFF");
     }
     Set_Drop_chanceInput(preset3.Drop_Chance);
+    //Disconnect
+    if (preset3.Disconnect_Inbound == true) {
+        Set_Disconnect_inboundCheckbox("ON");
+    }
+    else {
+        Set_Disconnect_inboundCheckbox("OFF");
+    }
+    if (preset3.Disconnect_Outbound == true) {
+        Set_Disconnect_outboundCheckbox("ON");
+    }
+    else {
+        Set_Disconnect_outboundCheckbox("OFF");
+    }
     //bandwidth
     if (preset3.BandwidthLimiter_Inbound == true) {
         Set_Bandwidth_inboundCheckbox("ON");
@@ -1920,6 +2116,19 @@ void preset4_config(void) {
         Set_Drop_outboundCheckbox("OFF");
     }
     Set_Drop_chanceInput(preset4.Drop_Chance);
+    //Disconnect
+    if (preset4.Disconnect_Inbound == true) {
+        Set_Disconnect_inboundCheckbox("ON");
+    }
+    else {
+        Set_Disconnect_inboundCheckbox("OFF");
+    }
+    if (preset4.Disconnect_Outbound == true) {
+        Set_Disconnect_outboundCheckbox("ON");
+    }
+    else {
+        Set_Disconnect_outboundCheckbox("OFF");
+    }
     //bandwidth
     if (preset4.BandwidthLimiter_Inbound == true) {
         Set_Bandwidth_inboundCheckbox("ON");
@@ -2050,6 +2259,19 @@ void preset5_config(void) {
         Set_Drop_outboundCheckbox("OFF");
     }
     Set_Drop_chanceInput(preset5.Drop_Chance);
+    //Disconnect
+    if (preset5.Disconnect_Inbound == true) {
+        Set_Disconnect_inboundCheckbox("ON");
+    }
+    else {
+        Set_Disconnect_inboundCheckbox("OFF");
+    }
+    if (preset5.Disconnect_Outbound == true) {
+        Set_Disconnect_outboundCheckbox("ON");
+    }
+    else {
+        Set_Disconnect_outboundCheckbox("OFF");
+    }
     //bandwidth
     if (preset5.BandwidthLimiter_Inbound == true) {
         Set_Bandwidth_inboundCheckbox("ON");
@@ -2228,7 +2450,17 @@ DWORD WINAPI threadFunction(LPVOID lpParam) {
                     uiStopCb(filterButton);
                 }
                 else {
-                    uiStartCb(filterButton);
+                    if (Mode == 0) {
+                        uiStartCb(filterButton);
+                    }
+                    else {
+                        
+                        IupSetAttribute(filterButton, "ACTIVE", "NO");
+                        uiStartCb(filterButton);
+                        Sleep(DelayTimerValue);
+                        uiStopCb(filterButton);
+                        IupSetAttribute(filterButton, "ACTIVE", "YES");
+                    }
                 }
             }
             else if (!isKeyDown && keyCurrentlyDown) {
@@ -2242,8 +2474,36 @@ DWORD WINAPI threadFunction(LPVOID lpParam) {
 
     return 0;
 }
+// Callback function for the timer
+static int timerDelayCb(Ihandle* ih) {
+    // Call uiStopCb to stop filtering
+    uiStopCb(ih);
+    // Destroy the timer after use to clean up
+    IupDestroy(ih);
+    return IUP_DEFAULT;
+}
 
-
+void intToStr(int num, char* str) {
+    int i = 0;
+    int sign = num;
+    if (num < 0) {
+        num = -num;
+    }
+    do {
+        str[i++] = num % 10 + '0';
+        num /= 10;
+    } while (num > 0);
+    if (sign < 0) {
+        str[i++] = '-';
+    }
+    str[i] = '\0';
+    // Reverse the string
+    for (int j = 0; j < i / 2; j++) {
+        char temp = str[j];
+        str[j] = str[i - j - 1];
+        str[i - j - 1] = temp;
+    }
+}
 int main(int argc, char* argv[]) {
 
     
@@ -2296,6 +2556,12 @@ int main(int argc, char* argv[]) {
 
     // Set the attributes
     IupSetAttributes(filterSelectList3, attributes);
+    IupSetAttributes(filterSelectList4, "1=Toggle, 2=Timer");
+    IupSetAttributes(filterSelectList5, "1=1, 2=2, 3=3, 4=4, 5=5, 6=6, 7=7, 8=8, 9=9, 10=10, 11=11, 12=12, 13=13, 14=14, 15=15, 16=16, 17=17, 18=18, 19=19, 20=20, 21=21, 22=22, 23=23, 24=24, 25=25, 26=26, 27=27, 28=28, 29=29, 30=30, 31=31, 32=32, 33=33, 34=34, 35=35, 36=36, 37=37, 38=38, 39=39, 40=40, 41=41, 42=42, 43=43, 44=44, 45=45, 46=46, 47=47, 48=48, 49=49, 50=50, 51=51, 52=52, 53=53, 54=54, 55=55, 56=56, 57=57, 58=58, 59=59, 60=60");
+
+    IupSetAttribute(filterSelectList5, "VALUE", "1");
+
+    preset1_config();
 
 
    // IupSetAttribute(filterSelectList3, "VALUE", "1");
