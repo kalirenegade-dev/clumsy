@@ -8,6 +8,7 @@ updated bandwidth module with a queue for bandwidth limit (with a KB/MB toggle) 
 
 Hotspot support (with the ability to toggle local/remore) based off of https://github.com/abaza121/clumsy-hotspot
 
+Speed Cap (by https://github.com/IntouchHealth/clumsy)
 
 # clumsy
 
